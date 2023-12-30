@@ -2,20 +2,20 @@
 
 An Elixir client for [Ogmios](https://github.com/CardanoSolutions/ogmios)
 
-## Installation
+## Running
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `xogmios` to your list of dependencies in `mix.exs`:
+Populate `OGMIOS_URL` and start iex:
 
-```elixir
-def deps do
-  [
-    {:xogmios, "~> 0.1.0"}
-  ]
-end
+```shell
+OGMIOS_URL="ws://..." iex -S mix
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/xogmios>.
+Then run the following:
 
+```elixir
+Xogmios.chain_sync()
+```
+
+## Development
+
+This library is highly experimental and is under heavy development. The ultimate goal is to support all of Ouroboros' mini-protocols.

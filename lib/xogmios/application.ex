@@ -1,20 +1,18 @@
 defmodule Xogmios.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
-  @moduledoc false
-
   use Application
 
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: Xogmios.Worker.start_link(arg)
-      # {Xogmios.Worker, arg}
+      {Xogmios.Websocket, url: ogmios_url()},
+      Xogmios.Database
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Xogmios.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp ogmios_url do
+    System.fetch_env!("OGMIOS_URL")
   end
 end
