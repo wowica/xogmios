@@ -4,9 +4,7 @@ defmodule Xogmios.Application do
   @impl true
   def start(_type, _args) do
     children =
-      [
-        Xogmios.Database
-      ]
+      []
       |> Kernel.++(xogmios_websocket())
 
     opts = [strategy: :one_for_one, name: Xogmios.Supervisor]
