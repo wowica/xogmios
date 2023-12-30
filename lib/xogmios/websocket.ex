@@ -50,36 +50,54 @@ defmodule Xogmios.Websocket do
   end
 
   defp handle_message(
-         %{"method" => "nextBlock", "result" => %{"direction" => "backward"} = _point} = _message,
+         %{
+           "id" => "start",
+           "method" => "nextBlock",
+           "result" => %{"direction" => "backward", "tip" => tip} = _result
+         } = _message,
          state
        ) do
-    # TODO: roll back Agent db to this point
+    IO.puts("Finding intersection...\n")
 
-    # First 5 blocks
-    # message = ~s"""
-    #   {
-    #     "jsonrpc": "2.0",
-    #     "method": "nextBlock",
-    #     "id": "5"
-    # }
-    # """
+    reply = ~s"""
+    {
+      "jsonrpc": "2.0",
+      "method": "findIntersection",
+      "params": {
+          "points": [
+            {
+              "slot": #{tip["slot"]},
+              "id": "#{tip["id"]}"
+            }
+        ]
+      }
+    }
+    """
 
-    message = ~s"""
+    {:reply, {:text, reply}, state}
+  end
+
+  defp handle_message(
+         %{"method" => "nextBlock", "result" => %{"direction" => "backward"}} = _message,
+         state
+       ) do
+    reply = ~S"""
       {
         "jsonrpc": "2.0",
         "method": "nextBlock"
     }
     """
 
-    {:reply, {:text, message}, state}
+    {:reply, {:text, reply}, state}
   end
 
   defp handle_message(
          %{"method" => "nextBlock", "result" => %{"direction" => "forward"} = result} = _message,
          state
        ) do
-    IO.puts(result["block"]["height"])
-    IO.puts(result["block"]["id"])
+    height = result["block"]["height"]
+    id = result["block"]["id"]
+    IO.puts("New Block!\nHeight: #{height}\tID: #{id}\n")
 
     # First 5 blocks
     # next_id = String.to_integer(message["id"]) - 1
@@ -93,30 +111,27 @@ defmodule Xogmios.Websocket do
     #   }
     #   """
 
-    #   {:reply, {:text, message}, state}
-    # else
-    #   {:ok, state}
-    # end
-
-    message = ~s"""
+    reply = ~s"""
       {
         "jsonrpc": "2.0",
         "method": "nextBlock"
     }
     """
 
-    {:reply, {:text, message}, state}
+    {:reply, {:text, reply}, state}
   end
 
   defp handle_message(%{"method" => "findIntersection"}, state) do
-    message = ~s"""
+    IO.puts("Intersection found.\nWaiting for next block...\n")
+
+    reply = ~s"""
       {
         "jsonrpc": "2.0",
         "method": "nextBlock"
     }
     """
 
-    {:reply, {:text, message}, state}
+    {:reply, {:text, reply}, state}
   end
 
   defp handle_message(message, state) do
