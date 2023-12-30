@@ -1,4 +1,5 @@
 defmodule Xogmios.Database do
+  # This module is not used yet.
   use Agent
 
   @agent_name __MODULE__

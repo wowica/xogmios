@@ -6,11 +6,9 @@ defmodule Xogmios.Websocket do
   def start_link(opts) do
     url = Keyword.get(opts, :url)
     name = Keyword.get(opts, :name, @name)
+    state = %{notify_on_connect: self()}
 
-    case WebSockex.start_link(url, __MODULE__, %{notify_on_connect: self()},
-           name: name
-           # debug: [:trace]
-         ) do
+    case WebSockex.start_link(url, __MODULE__, state, name: name) do
       {:ok, ws} ->
         receive do
           {:connected, _connection} ->
@@ -82,9 +80,9 @@ defmodule Xogmios.Websocket do
          state
        ) do
     reply = ~S"""
-      {
-        "jsonrpc": "2.0",
-        "method": "nextBlock"
+    {
+      "jsonrpc": "2.0",
+      "method": "nextBlock"
     }
     """
 
@@ -99,22 +97,10 @@ defmodule Xogmios.Websocket do
     id = result["block"]["id"]
     IO.puts("New Block!\nHeight: #{height}\tID: #{id}\n")
 
-    # First 5 blocks
-    # next_id = String.to_integer(message["id"]) - 1
-
-    # if next_id > 0 do
-    #   message = ~s"""
-    #     {
-    #       "jsonrpc": "2.0",
-    #       "method": "nextBlock",
-    #       "id": "#{next_id}"
-    #   }
-    #   """
-
-    reply = ~s"""
-      {
-        "jsonrpc": "2.0",
-        "method": "nextBlock"
+    reply = ~S"""
+    {
+      "jsonrpc": "2.0",
+      "method": "nextBlock"
     }
     """
 
@@ -124,10 +110,10 @@ defmodule Xogmios.Websocket do
   defp handle_message(%{"method" => "findIntersection"}, state) do
     IO.puts("Intersection found.\nWaiting for next block...\n")
 
-    reply = ~s"""
-      {
-        "jsonrpc": "2.0",
-        "method": "nextBlock"
+    reply = ~S"""
+    {
+      "jsonrpc": "2.0",
+      "method": "nextBlock"
     }
     """
 

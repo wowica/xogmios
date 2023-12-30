@@ -3,16 +3,23 @@ defmodule Xogmios.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      {Xogmios.Websocket, url: ogmios_url()},
-      Xogmios.Database
-    ]
+    children =
+      [
+        Xogmios.Database
+      ]
+      |> Kernel.++(xogmios_websocket())
 
     opts = [strategy: :one_for_one, name: Xogmios.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
-  defp ogmios_url do
-    System.fetch_env!("OGMIOS_URL")
+  def xogmios_websocket() do
+    connection_url = System.get_env("OGMIOS_URL")
+
+    if is_nil(connection_url) do
+      []
+    else
+      [{Xogmios.Websocket, url: connection_url}]
+    end
   end
 end

@@ -4,13 +4,13 @@ defmodule Xogmios do
     Xogmios.Websocket.send_frame(pid, message())
   end
 
-  def message do
+  defp message do
     # Syncs with tip
     ~S"""
-      {
-        "jsonrpc": "2.0",
-        "method": "nextBlock",
-        "id": "start"
+    {
+      "jsonrpc": "2.0",
+      "method": "nextBlock",
+      "id": "start"
     }
     """
   end
