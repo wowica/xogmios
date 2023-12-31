@@ -17,7 +17,10 @@ defmodule Xogmios.Application do
     if is_nil(connection_url) do
       []
     else
-      [{Xogmios.Websocket, url: connection_url}]
+      [
+        {Xogmios.ClientExampleA, url: connection_url},
+        {Xogmios.ClientExampleB, url: connection_url}
+      ]
     end
   end
 end
