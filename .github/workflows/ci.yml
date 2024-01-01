@@ -1,0 +1,118 @@
+name: CI
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+env:
+  MIX_ENV: test
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            _build
+            deps
+          key: |
+            xogmios-versions-${{ hashFiles('.tool-versions') }}-${{ hashFiles('mix.lock') }}-YYYY-MM-DD
+          restore-keys: |
+            xogmios-versions-${{ hashFiles('.tool-versions') }}-${{ hashFiles('mix.lock') }}-YYYY-MM-DD
+
+      - name: Install Elixir dependencies
+        run: mix do deps.get, compile --warnings-as-errors
+
+  test:
+    name: Test
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            _build
+            deps
+          key: |
+            xogmios-versions-${{ hashFiles('.tool-versions') }}-${{ hashFiles('mix.lock') }}-YYYY-MM-DD
+          restore-keys: |
+            xogmios-versions-${{ hashFiles('.tool-versions') }}-${{ hashFiles('mix.lock') }}-YYYY-MM-DD
+
+      - name: Run tests
+        run: mix test --warnings-as-errors
+
+  analysis:
+    name: Static Analysis
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup BEAM
+        id: beam
+        uses: erlef/setup-beam@v1
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            _build
+            deps
+          key: |
+            xogmios-versions-${{ hashFiles('.tool-versions') }}-${{ hashFiles('mix.lock') }}-YYYY-MM-DD
+          restore-keys: |
+            xogmios-versions-${{ hashFiles('.tool-versions') }}-${{ hashFiles('mix.lock') }}-YYYY-MM-DD
+
+      - name: Mix Audit
+        run: mix deps.audit
+
+      - name: Formatted
+        run: mix format --check-formatted
+
+      - name: Restore PLT cache
+        uses: actions/cache@v3
+        id: plt_cache
+        with:
+          key: plt-${{ runner.os }}-${{ steps.beam.outputs.otp-version }}-${{ steps.beam.outputs.elixir-version }}-${{ hashFiles('**/mix.lock') }}-${{ hashFiles('**/*.ex') }}
+          restore-keys: |
+            plt-${{ runner.os }}-${{ steps.beam.outputs.otp-version }}-${{ steps.beam.outputs.elixir-version }}-${{ hashFiles('**/mix.lock') }}-${{ hashFiles('**/*.ex') }}
+            plt-${{ runner.os }}-${{ steps.beam.outputs.otp-version }}-${{ steps.beam.outputs.elixir-version }}-${{ hashFiles('**/mix.lock') }}-
+            plt-${{ runner.os }}-${{ steps.beam.outputs.otp-version }}-${{ steps.beam.outputs.elixir-version }}-
+            plt-${{ runner.os }}-${{ steps.beam.outputs.otp-version }}-
+          path: priv/plts
+
+      - name: Create PLTs
+        if: steps.plt_cache.outputs.cache-hit != 'true' || github.run_attempt != '1'
+        run: mix dialyzer --plt
+
+      - name: Run Dialyzer
+        run: mix dialyzer --format github

@@ -4,9 +4,7 @@ defmodule Xogmios.Application do
   @impl true
   def start(_type, _args) do
     children =
-      [
-        Xogmios.Database
-      ]
+      []
       |> Kernel.++(xogmios_websocket())
 
     opts = [strategy: :one_for_one, name: Xogmios.Supervisor]
@@ -19,7 +17,10 @@ defmodule Xogmios.Application do
     if is_nil(connection_url) do
       []
     else
-      [{Xogmios.Websocket, url: connection_url}]
+      [
+        {Xogmios.ClientExampleA, url: connection_url},
+        {Xogmios.ClientExampleB, url: connection_url}
+      ]
     end
   end
 end
