@@ -4,8 +4,9 @@ defmodule Xogmios.ChainSync do
   implements the connection with the Websocket server
   """
 
-  @callback init() :: {:ok, map()}
-  @callback handle_block(map(), any()) :: {:ok, :next_block, map()} | {:ok, map()}
+  @callback init(keyword()) :: {:ok, map()}
+  @callback handle_block(map(), any()) ::
+              {:ok, :next_block, map()} | {:ok, map()}
 
   defmacro __using__(_opts) do
     quote do
@@ -14,19 +15,20 @@ defmodule Xogmios.ChainSync do
 
       @name __MODULE__
 
-      def start_connection(opts), do: do_start_link(opts)
+      def start_connection(opts),
+        do: do_start_link(opts)
 
       def do_start_link(opts) do
         url = Keyword.get(opts, :url)
         name = Keyword.get(opts, :name, @name)
 
-        {:ok, init_state} = apply(__MODULE__, :init, [])
+        {:ok, init_state} = apply(__MODULE__, :init, [opts])
         initial_state = Map.merge(init_state, %{notify_on_connect: self()})
 
         case WebSockex.start_link(url, __MODULE__, initial_state, name: name) do
           {:ok, ws} ->
             receive do
-              {:connected, connection} ->
+              {:connected, _connection} ->
                 start = ~S"""
                 {
                   "jsonrpc": "2.0",
@@ -49,11 +51,11 @@ defmodule Xogmios.ChainSync do
         end
       end
 
-      def init() do
+      def init(_opts) do
         {:ok, %{}}
       end
 
-      defoverridable init: 0
+      defoverridable init: 1
 
       def send_frame(connection, frame) do
         try do
@@ -159,7 +161,7 @@ defmodule Xogmios.ChainSync do
       end
 
       defp handle_message(message, state) do
-        IO.puts("handle_message #{inspect(message)}")
+        IO.puts("handle message: #{message}")
         {:ok, state}
       end
 

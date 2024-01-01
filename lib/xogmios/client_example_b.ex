@@ -9,7 +9,7 @@ defmodule Xogmios.ClientExampleB do
     do: start_connection(opts)
 
   @impl true
-  def init() do
+  def init(_args) do
     {:ok, %{counter: 3}}
   end
 
