@@ -9,6 +9,7 @@ defmodule Xogmios.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      compilers: [:yecc] ++ Mix.compilers(),
       test_coverage: [
         ignore_modules: [
           ~r/\.TestRouter/,
@@ -36,11 +37,13 @@ defmodule Xogmios.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:jason, "~> 1.4"},
-      {:websockex, "~> 0.4.3"},
       {:cowboy, "~> 2.10", only: :test},
+      {:dialyxir, "~> 1.4.1", only: [:dev, :test], runtime: false},
+      {:jason, "~> 1.4"},
+      {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
       {:plug, "~> 1.15", only: :test},
-      {:plug_cowboy, "~> 2.6", only: :test}
+      {:plug_cowboy, "~> 2.6", only: :test},
+      {:websockex, "~> 0.4.3"}
     ]
   end
 end
