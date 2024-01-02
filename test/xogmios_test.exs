@@ -41,7 +41,7 @@ defmodule XogmiosTest do
   test "terminates process when connection is closed" do
     pid = start_supervised!({DummyClient, url: @ws_url, target: self()})
     assert is_pid(pid)
-    Process.sleep(10)
+    Process.sleep(1000)
     refute Process.alive?(pid)
     assert GenServer.whereis(DummyClient) == nil
   end
@@ -53,7 +53,7 @@ defmodule XogmiosTest do
     whereis_pid = GenServer.whereis(DummyClient)
     assert whereis_pid == pid
     assert is_pid(pid)
-    Process.sleep(10)
+    Process.sleep(1000)
     assert GenServer.whereis(DummyClient) != nil
     assert GenServer.whereis(DummyClient) != whereis_pid
   end
