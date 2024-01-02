@@ -92,6 +92,9 @@ jobs:
           restore-keys: |
             xogmios-versions-${{ hashFiles('.tool-versions') }}-${{ hashFiles('mix.lock') }}-YYYY-MM-DD
 
+      - name: Credo
+        run: mix credo
+
       - name: Mix Audit
         run: mix deps.audit
 

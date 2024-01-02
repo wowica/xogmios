@@ -5,24 +5,26 @@ defmodule Xogmios.ClientExampleB do
 
   use Xogmios.ChainSync
 
+  require Logger
+
   def start_link(opts),
     do: start_connection(opts)
 
   @impl true
   def init(_args) do
-    {:ok, %{counter: 3}}
+    {:ok, %{counter: 2}}
   end
 
   @impl true
   def handle_block(block, %{counter: counter} = state) when counter > 1 do
-    IO.puts("#{__MODULE__} handle_block #{block["height"]}")
+    Logger.info("#{__MODULE__} handle_block #{block["height"]}")
     new_state = Map.merge(state, %{counter: counter - 1})
     {:ok, :next_block, new_state}
   end
 
   @impl true
   def handle_block(block, state) do
-    IO.puts("#{__MODULE__} final handle_block #{block["height"]}")
-    {:ok, state}
+    Logger.info("#{__MODULE__} final handle_block #{block["height"]}")
+    {:ok, :close, state}
   end
 end

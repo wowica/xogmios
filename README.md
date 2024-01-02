@@ -55,22 +55,26 @@ Clone this repo, populate `OGMIOS_URL` and run the following to start following 
 
 ```shell
 OGMIOS_URL="ws://..." mix run --no-halt
-connected!
-Finding intersection...
+Compiling 4 files (.ex)
 
-Intersection found.
-Waiting for next block...
+21:29:25.609 [info] Finding intersection...
 
-New Block!
-Height: 9739937 ID: 1a13643c99270355251808eec434f99f2ac439971b88b9afda5b055752b546b2
+21:29:25.619 [info] Intersection found.
 
-New Block!
-Height: 9739938 ID: eba6cfb41f2e1c777ec282b24ea27cf23d118d4522fd26397d8f4b179ea70340
+21:29:25.619 [info] Waiting for next block...
+
+21:29:36.330 [info] Elixir.Xogmios.ClientExampleA handle_block 9751015
+
+21:29:53.522 [info] Elixir.Xogmios.ClientExampleA handle_block 9751016
+
+21:30:08.763 [info] Elixir.Xogmios.ClientExampleA handle_block 9751017
+
+21:30:12.240 [info] Elixir.Xogmios.ClientExampleA handle_block 9751018
 
 ...
 ```
 
-## Text
+## Test
 
 Run `mix test`
 

@@ -1,4 +1,6 @@
 defmodule ChainSync.TestHandler do
+  @moduledoc false
+
   @behaviour :cowboy_websocket
 
   @impl true
@@ -26,6 +28,11 @@ defmodule ChainSync.TestHandler do
       _ ->
         {:reply, {:text, payload}, state}
     end
+  end
+
+  @impl true
+  def terminate(_arg1, _arg2, _arg3) do
+    :ok
   end
 
   def websocket_info(:stop, state) do

@@ -38,6 +38,7 @@ defmodule Xogmios.MixProject do
   defp deps do
     [
       {:cowboy, "~> 2.10", only: :test},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4.1", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.4"},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
