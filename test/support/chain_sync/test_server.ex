@@ -1,4 +1,6 @@
 defmodule ChainSync.TestServer do
+  @moduledoc false
+
   @default_port 8989
 
   def get_url(port \\ @default_port) do

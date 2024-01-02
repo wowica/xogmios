@@ -28,7 +28,7 @@ defmodule XogmiosTest do
     @impl true
     def handle_block(_block, state) do
       send(state.target, :handle_block)
-      {:ok, :next_block, state}
+      {:ok, :close, state}
     end
   end
 
@@ -36,5 +36,25 @@ defmodule XogmiosTest do
     pid = start_supervised!({DummyClient, url: @ws_url, target: self()})
     assert is_pid(pid)
     assert_receive :handle_block
+  end
+
+  test "terminates process when connection is closed" do
+    pid = start_supervised!({DummyClient, url: @ws_url, target: self()})
+    assert is_pid(pid)
+    Process.sleep(10)
+    refute Process.alive?(pid)
+    assert GenServer.whereis(DummyClient) == nil
+  end
+
+  test "restarts process when restart: :permanent" do
+    pid =
+      start_supervised!({DummyClient, url: @ws_url, target: self(), restart: :permanent})
+
+    whereis_pid = GenServer.whereis(DummyClient)
+    assert whereis_pid == pid
+    assert is_pid(pid)
+    Process.sleep(10)
+    assert GenServer.whereis(DummyClient) != nil
+    assert GenServer.whereis(DummyClient) != whereis_pid
   end
 end

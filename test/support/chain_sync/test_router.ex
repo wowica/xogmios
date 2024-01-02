@@ -1,4 +1,6 @@
 defmodule ChainSync.TestRouter do
+  @moduledoc false
+
   use Plug.Router
 
   plug(:match)

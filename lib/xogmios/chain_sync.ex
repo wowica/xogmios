@@ -4,16 +4,34 @@ defmodule Xogmios.ChainSync do
   implements the connection with the Websocket server
   """
 
+  alias Xogmios.ChainSync.Messages
+
   @callback init(keyword()) :: {:ok, map()}
   @callback handle_block(map(), any()) ::
-              {:ok, :next_block, map()} | {:ok, map()}
+              {:ok, :next_block, map()} | {:ok, map()} | {:ok, :close, map()}
 
   defmacro __using__(_opts) do
     quote do
-      use WebSockex
       @behaviour Xogmios.ChainSync
 
+      use WebSockex
+
+      require Logger
+
       @name __MODULE__
+
+      def init(_opts), do: {:ok, %{}}
+      defoverridable init: 1
+
+      def child_spec(opts) do
+        %{
+          id: __MODULE__,
+          start: {__MODULE__, :start_link, [opts]},
+          shutdown: 5_000,
+          restart: Keyword.get(opts, :restart, :transient),
+          type: :worker
+        }
+      end
 
       def start_connection(opts),
         do: do_start_link(opts)
@@ -29,15 +47,8 @@ defmodule Xogmios.ChainSync do
           {:ok, ws} ->
             receive do
               {:connected, _connection} ->
-                start = ~S"""
-                {
-                  "jsonrpc": "2.0",
-                  "method": "nextBlock",
-                  "id": "start"
-                }
-                """
-
-                send_frame(ws, start)
+                message = Messages.next_block_start()
+                send_frame(ws, message)
 
                 {:ok, ws}
             after
@@ -50,12 +61,6 @@ defmodule Xogmios.ChainSync do
             error
         end
       end
-
-      def init(_opts) do
-        {:ok, %{}}
-      end
-
-      defoverridable init: 1
 
       def send_frame(connection, frame) do
         try do
@@ -74,7 +79,7 @@ defmodule Xogmios.ChainSync do
             handle_message(message, state)
 
           {:error, error} ->
-            IO.puts("Error decoding response #{inspect(error)}")
+            Logger.warning("Error decoding response #{inspect(error)}")
             {:close, state}
         end
       end
@@ -87,38 +92,20 @@ defmodule Xogmios.ChainSync do
              } = _message,
              state
            ) do
-        IO.puts("Finding intersection...\n")
+        Logger.info("Finding intersection...")
 
-        reply = ~s"""
-        {
-          "jsonrpc": "2.0",
-          "method": "findIntersection",
-          "params": {
-              "points": [
-                {
-                  "slot": #{tip["slot"]},
-                  "id": "#{tip["id"]}"
-                }
-            ]
-          }
-        }
-        """
+        message = Messages.find_intersection(tip["slot"], tip["id"])
 
-        {:reply, {:text, reply}, state}
+        {:reply, {:text, message}, state}
       end
 
       defp handle_message(
              %{"method" => "nextBlock", "result" => %{"direction" => "backward"}} = _message,
              state
            ) do
-        reply = ~S"""
-        {
-          "jsonrpc": "2.0",
-          "method": "nextBlock"
-        }
-        """
+        message = Messages.next_block()
 
-        {:reply, {:text, reply}, state}
+        {:reply, {:text, message}, state}
       end
 
       defp handle_message(
@@ -130,17 +117,14 @@ defmodule Xogmios.ChainSync do
 
         case apply(__MODULE__, :handle_block, [block, state]) do
           {:ok, :next_block, new_state} ->
-            reply = ~S"""
-            {
-              "jsonrpc": "2.0",
-              "method": "nextBlock"
-            }
-            """
-
-            {:reply, {:text, reply}, new_state}
+            message = Messages.next_block()
+            {:reply, {:text, message}, new_state}
 
           {:ok, new_state} ->
             {:ok, new_state}
+
+          {:ok, :close, new_state} ->
+            {:close, new_state}
 
           _ ->
             raise "Invalid return type"
@@ -148,20 +132,16 @@ defmodule Xogmios.ChainSync do
       end
 
       defp handle_message(%{"method" => "findIntersection"}, state) do
-        IO.puts("Intersection found.\nWaiting for next block...\n")
+        Logger.info("Intersection found.")
+        Logger.info("Waiting for next block...")
 
-        reply = ~S"""
-        {
-          "jsonrpc": "2.0",
-          "method": "nextBlock"
-        }
-        """
+        message = Messages.next_block()
 
-        {:reply, {:text, reply}, state}
+        {:reply, {:text, message}, state}
       end
 
       defp handle_message(message, state) do
-        IO.puts("handle message: #{message}")
+        Logger.info("handle message: #{message}")
         {:ok, state}
       end
 
@@ -171,7 +151,7 @@ defmodule Xogmios.ChainSync do
       end
 
       def handle_disconnect(%{reason: {:local, reason}}, state) do
-        IO.puts("Local close with reason: #{inspect(reason)}")
+        Logger.info("#{__MODULE__} local close with reason: #{inspect(reason)}")
         {:ok, state}
       end
     end
