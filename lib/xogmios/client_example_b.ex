@@ -18,6 +18,7 @@ defmodule Xogmios.ClientExampleB do
   @impl true
   def handle_block(block, %{counter: counter} = state) when counter > 1 do
     Logger.info("#{__MODULE__} handle_block #{block["height"]}")
+
     new_state = Map.merge(state, %{counter: counter - 1})
     {:ok, :next_block, new_state}
   end
@@ -25,6 +26,7 @@ defmodule Xogmios.ClientExampleB do
   @impl true
   def handle_block(block, state) do
     Logger.info("#{__MODULE__} final handle_block #{block["height"]}")
+
     {:ok, :close, state}
   end
 end
