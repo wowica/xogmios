@@ -26,8 +26,7 @@ defmodule Xogmios.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :observer, :wx, :runtime_tools],
-      mod: {Xogmios.Application, []}
+      extra_applications: [:logger]
     ]
   end
 
