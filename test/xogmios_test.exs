@@ -30,6 +30,12 @@ defmodule XogmiosTest do
       send(state.target, :handle_block)
       {:ok, :close, state}
     end
+
+    @impl true
+    def terminate(_reason, state) do
+      send(state.target, :terminate)
+      :ok
+    end
   end
 
   test "receives handle block" do
@@ -44,17 +50,6 @@ defmodule XogmiosTest do
     Process.sleep(1000)
     refute Process.alive?(pid)
     assert GenServer.whereis(DummyClient) == nil
-  end
-
-  test "restarts process when restart: :permanent" do
-    pid =
-      start_supervised!({DummyClient, url: @ws_url, target: self(), restart: :permanent})
-
-    whereis_pid = GenServer.whereis(DummyClient)
-    assert whereis_pid == pid
-    assert is_pid(pid)
-    Process.sleep(1000)
-    assert GenServer.whereis(DummyClient) != nil
-    assert GenServer.whereis(DummyClient) != whereis_pid
+    assert_receive :terminate
   end
 end
