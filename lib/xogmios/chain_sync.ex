@@ -57,7 +57,8 @@ defmodule Xogmios.ChainSync do
                 {:error, :connection_timeout}
             end
 
-          {:error, _} = error ->
+          {:error, reason} = error ->
+            Logger.warning("Error starting WebSockex process #{inspect(reason)}")
             error
         end
       end
@@ -65,8 +66,12 @@ defmodule Xogmios.ChainSync do
       def send_frame(connection, frame) do
         try do
           case WebSockex.send_frame(connection, {:text, frame}) do
-            :ok -> :ok
-            {:error, _reason} = error -> error
+            :ok ->
+              :ok
+
+            {:error, reason} = error ->
+              Logger.warning("Error sending frame #{inspect(reason)}")
+              error
           end
         rescue
           _ -> {:error, :connection_down}
@@ -92,10 +97,7 @@ defmodule Xogmios.ChainSync do
              } = _message,
              state
            ) do
-        Logger.info("Finding intersection...")
-
         message = Messages.find_intersection(tip["slot"], tip["id"])
-
         {:reply, {:text, message}, state}
       end
 
@@ -104,7 +106,6 @@ defmodule Xogmios.ChainSync do
              state
            ) do
         message = Messages.next_block()
-
         {:reply, {:text, message}, state}
       end
 
@@ -132,16 +133,11 @@ defmodule Xogmios.ChainSync do
       end
 
       defp handle_message(%{"method" => "findIntersection"}, state) do
-        Logger.info("Intersection found.")
-        Logger.info("Waiting for next block...")
-
         message = Messages.next_block()
-
         {:reply, {:text, message}, state}
       end
 
       defp handle_message(message, state) do
-        Logger.info("handle message: #{message}")
         {:ok, state}
       end
 
@@ -151,7 +147,6 @@ defmodule Xogmios.ChainSync do
       end
 
       def handle_disconnect(%{reason: {:local, reason}}, state) do
-        Logger.info("#{__MODULE__} local close with reason: #{inspect(reason)}")
         {:ok, state}
       end
     end

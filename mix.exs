@@ -1,10 +1,13 @@
 defmodule Xogmios.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/wowica/xogmios"
+  @version "0.0.1"
+
   def project do
     [
       app: :xogmios,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.16",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -19,7 +22,11 @@ defmodule Xogmios.MixProject do
           Xogmios.ClientExampleA,
           Xogmios.ClientExampleB
         ]
-      ]
+      ],
+      package: package(),
+
+      # Docs
+      name: "Xogmios"
     ]
   end
 
@@ -44,6 +51,13 @@ defmodule Xogmios.MixProject do
       {:plug, "~> 1.15", only: :test},
       {:plug_cowboy, "~> 2.6", only: :test},
       {:websockex, "~> 0.4.3"}
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["Carlos Souza"],
+      links: %{"GitHub" => @source_url}
     ]
   end
 end
