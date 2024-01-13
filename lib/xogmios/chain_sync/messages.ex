@@ -1,6 +1,6 @@
 defmodule Xogmios.ChainSync.Messages do
   @moduledoc """
-  This module returns messages according to the Ogmios API
+  This module returns messages for the Chain Synchronization protocol
   """
 
   def next_block_start() do
