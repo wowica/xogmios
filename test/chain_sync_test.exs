@@ -1,4 +1,4 @@
-defmodule XogmiosTest do
+defmodule ChainSyncTest do
   use ExUnit.Case
 
   @ws_url ChainSync.TestServer.get_url()
