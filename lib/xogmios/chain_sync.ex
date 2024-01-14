@@ -1,7 +1,6 @@
 defmodule Xogmios.ChainSync do
   @moduledoc """
-  This module defines the behaviour for ChainSync clients and
-  implements the connection with the Websocket server
+  This module defines the behaviour for ChainSync clients.
   """
 
   alias Xogmios.ChainSync.Messages
@@ -14,80 +13,9 @@ defmodule Xogmios.ChainSync do
     quote do
       @behaviour Xogmios.ChainSync
 
-      use WebSockex
+      use Xogmios.Connection, :chain_sync
 
       require Logger
-
-      @name __MODULE__
-
-      def init(_opts), do: {:ok, %{}}
-      defoverridable init: 1
-
-      def child_spec(opts) do
-        %{
-          id: __MODULE__,
-          start: {__MODULE__, :start_link, [opts]},
-          shutdown: 5_000,
-          restart: Keyword.get(opts, :restart, :transient),
-          type: :worker
-        }
-      end
-
-      def start_connection(opts),
-        do: do_start_link(opts)
-
-      def do_start_link(opts) do
-        url = Keyword.get(opts, :url)
-        name = Keyword.get(opts, :name, @name)
-
-        {:ok, init_state} = apply(__MODULE__, :init, [opts])
-        initial_state = Map.merge(init_state, %{notify_on_connect: self()})
-
-        case WebSockex.start_link(url, __MODULE__, initial_state, name: name) do
-          {:ok, ws} ->
-            receive do
-              {:connected, _connection} ->
-                message = Messages.next_block_start()
-                send_frame(ws, message)
-
-                {:ok, ws}
-            after
-              _timeout = 5_000 ->
-                Kernel.send(ws, :close)
-                {:error, :connection_timeout}
-            end
-
-          {:error, reason} = error ->
-            Logger.warning("Error starting WebSockex process #{inspect(reason)}")
-            error
-        end
-      end
-
-      def send_frame(connection, frame) do
-        try do
-          case WebSockex.send_frame(connection, {:text, frame}) do
-            :ok ->
-              :ok
-
-            {:error, reason} = error ->
-              Logger.warning("Error sending frame #{inspect(reason)}")
-              error
-          end
-        rescue
-          _ -> {:error, :connection_down}
-        end
-      end
-
-      def handle_frame({_type, msg}, state) do
-        case Jason.decode(msg) do
-          {:ok, message} ->
-            handle_message(message, state)
-
-          {:error, error} ->
-            Logger.warning("Error decoding response #{inspect(error)}")
-            {:close, state}
-        end
-      end
 
       defp handle_message(
              %{
@@ -128,7 +56,7 @@ defmodule Xogmios.ChainSync do
             {:close, new_state}
 
           _ ->
-            raise "Invalid return type"
+            Logger.warning("Invalid return type")
         end
       end
 
@@ -138,15 +66,7 @@ defmodule Xogmios.ChainSync do
       end
 
       defp handle_message(message, state) do
-        {:ok, state}
-      end
-
-      def handle_connect(connection, %{notify_on_connect: pid} = state) do
-        send(pid, {:connected, connection})
-        {:ok, state}
-      end
-
-      def handle_disconnect(%{reason: {:local, reason}}, state) do
+        Logger.warning("uncaught message: #{inspect(message)}")
         {:ok, state}
       end
     end
