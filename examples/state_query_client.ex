@@ -11,15 +11,13 @@ defmodule StateQueryClient do
   def start_link(opts),
     do: start_connection(opts)
 
-  def get_current_epoch() do
-    send_query(:get_current_epoch)
-  end
+  def get_current_epoch(),
+    do: send_query(:get_current_epoch)
 
-  def get_era_start() do
-    send_query(:get_era_start)
-  end
+  def get_era_start(),
+    do: send_query(:get_era_start)
 
-  ## Callbacks
+  ## Callback
 
   @impl true
   def handle_query_response(%{query: query, result: result}, state)

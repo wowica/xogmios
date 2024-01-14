@@ -5,8 +5,12 @@ defmodule ChainSyncClient do
 
   use Xogmios.ChainSync
 
+  ## Client API
+
   def start_link(opts),
     do: start_connection(opts)
+
+  ## Callback
 
   @impl true
   def handle_block(block, state) do
