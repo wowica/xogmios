@@ -26,7 +26,6 @@ defmodule Xogmios.ChainSync do
           "result" => %{"direction" => "backward", "tip" => tip}
         } = message
 
-        # Logger.debug("id start")
         message = Messages.find_intersection(tip["slot"], tip["id"])
         {:reply, {:text, message}, state}
       end
@@ -48,8 +47,6 @@ defmodule Xogmios.ChainSync do
             %{"method" => "nextBlock", "result" => %{"direction" => "forward"} = result},
             state
           ) do
-        # Logger.info("handle_block #{result["block"]["height"]}")
-
         case state.handler.handle_block(result["block"], state) do
           {:ok, :next_block, new_state} ->
             message = Messages.next_block()
@@ -59,7 +56,7 @@ defmodule Xogmios.ChainSync do
             {:ok, new_state}
 
           {:ok, :close, new_state} ->
-            {:close, new_state}
+            {:close, "finished", new_state}
 
           response ->
             Logger.warning("Invalid response #{inspect(response)}")
