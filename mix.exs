@@ -50,7 +50,7 @@ defmodule Xogmios.MixProject do
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
       {:plug, "~> 1.15", only: :test},
       {:plug_cowboy, "~> 2.6", only: :test},
-      {:websockex, "~> 0.4.3"}
+      {:websocket_client, "~> 1.5"}
     ]
   end
 

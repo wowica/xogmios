@@ -1,27 +1,17 @@
 defmodule Xogmios.ChainSync do
-  @moduledoc """
-  This module defines the behaviour for ChainSync clients and
-  implements the connection with the Websocket server
-  """
-
   alias Xogmios.ChainSync.Messages
 
-  @callback init(keyword()) :: {:ok, map()}
+  require Logger
+
   @callback handle_block(map(), any()) ::
               {:ok, :next_block, map()} | {:ok, map()} | {:ok, :close, map()}
 
   defmacro __using__(_opts) do
     quote do
       @behaviour Xogmios.ChainSync
-
-      use WebSockex
-
+      @behaviour :websocket_client
       require Logger
-
       @name __MODULE__
-
-      def init(_opts), do: {:ok, %{}}
-      defoverridable init: 1
 
       def child_spec(opts) do
         %{
@@ -33,90 +23,87 @@ defmodule Xogmios.ChainSync do
         }
       end
 
+      def init([%{handler: handler}]) do
+        Logger.debug("Xogmios.ChainSync init")
+        {:once, %{handler: handler}}
+      end
+
+      defoverridable init: 1
+
       def start_connection(opts),
         do: do_start_link(opts)
 
       def do_start_link(opts) do
-        url = Keyword.get(opts, :url)
-        name = Keyword.get(opts, :name, @name)
-
-        {:ok, init_state} = apply(__MODULE__, :init, [opts])
-        initial_state = Map.merge(init_state, %{notify_on_connect: self()})
-
-        case WebSockex.start_link(url, __MODULE__, initial_state, name: name) do
-          {:ok, ws} ->
-            receive do
-              {:connected, _connection} ->
-                message = Messages.next_block_start()
-                send_frame(ws, message)
-
-                {:ok, ws}
-            after
-              _timeout = 5_000 ->
-                Kernel.send(ws, :close)
-                {:error, :connection_timeout}
-            end
-
-          {:error, reason} = error ->
-            Logger.warning("Error starting WebSockex process #{inspect(reason)}")
-            error
-        end
+        url = Keyword.get(opts, :url, "ws://192.168.1.11:1339")
+        state = %{handler: __MODULE__}
+        IO.inspect("state: #{inspect(state)}")
+        :websocket_client.start_link(url, __MODULE__, [state])
       end
 
-      def send_frame(connection, frame) do
-        try do
-          case WebSockex.send_frame(connection, {:text, frame}) do
-            :ok ->
-              :ok
-
-            {:error, reason} = error ->
-              Logger.warning("Error sending frame #{inspect(reason)}")
-              error
-          end
-        rescue
-          _ -> {:error, :connection_down}
-        end
+      def onconnect(_arg0, state) do
+        Logger.debug("on connect")
+        message = Messages.next_block_start()
+        :websocket_client.cast(self(), {:text, message})
+        {:ok, state}
       end
 
-      def handle_frame({_type, msg}, state) do
-        case Jason.decode(msg) do
+      def start_sync(pid) do
+        message = Messages.next_block_start()
+        :websocket_client.cast(pid, {:text, message})
+      end
+
+      def ondisconnect(_reason, state) do
+        Logger.debug("on disconnect")
+        {:ok, state}
+      end
+
+      def websocket_handle({:text, raw_message}, _conn, state) do
+        case Jason.decode(raw_message) do
           {:ok, message} ->
             handle_message(message, state)
 
-          {:error, error} ->
-            Logger.warning("Error decoding response #{inspect(error)}")
-            {:close, state}
+          {:error, reason} ->
+            Logger.warning("Error decoding message #{inspect(reason)}")
+            {:ok, state}
         end
       end
 
-      defp handle_message(
-             %{
-               "id" => "start",
-               "method" => "nextBlock",
-               "result" => %{"direction" => "backward", "tip" => tip} = _result
-             } = _message,
-             state
-           ) do
+      def websocket_handle(_message, _conn, state) do
+        # Logger.debug("raw_message #{inspect(message)}")
+        {:ok, state}
+      end
+
+      def handle_message(%{"id" => "start"} = message, state) do
+        %{
+          "method" => "nextBlock",
+          "result" => %{"direction" => "backward", "tip" => tip}
+        } = message
+
+        Logger.debug("id start")
         message = Messages.find_intersection(tip["slot"], tip["id"])
         {:reply, {:text, message}, state}
       end
 
-      defp handle_message(
-             %{"method" => "nextBlock", "result" => %{"direction" => "backward"}} = _message,
-             state
-           ) do
+      def handle_message(%{"method" => "findIntersection"}, state) do
         message = Messages.next_block()
         {:reply, {:text, message}, state}
       end
 
-      defp handle_message(
-             %{"method" => "nextBlock", "result" => %{"direction" => "forward"} = result} =
-               _message,
-             state
-           ) do
-        block = result["block"]
+      def handle_message(
+            %{"method" => "nextBlock", "result" => %{"direction" => "backward"}},
+            state
+          ) do
+        message = Messages.next_block()
+        {:reply, {:text, message}, state}
+      end
 
-        case apply(__MODULE__, :handle_block, [block, state]) do
+      def handle_message(
+            %{"method" => "nextBlock", "result" => %{"direction" => "forward"} = result},
+            state
+          ) do
+        Logger.info("handle_block #{result["block"]["height"]}")
+
+        case state.handler.handle_block(result["block"], state) do
           {:ok, :next_block, new_state} ->
             message = Messages.next_block()
             {:reply, {:text, message}, new_state}
@@ -127,28 +114,31 @@ defmodule Xogmios.ChainSync do
           {:ok, :close, new_state} ->
             {:close, new_state}
 
-          _ ->
-            raise "Invalid return type"
+          response ->
+            Logger.warning("Invalid response #{inspect(response)}")
         end
       end
 
-      defp handle_message(%{"method" => "findIntersection"}, state) do
-        message = Messages.next_block()
-        {:reply, {:text, message}, state}
+      def handle_message({:text, message}, state) do
+        Logger.info("fallback handle message #{inspect(message)}")
+        {:close, state}
       end
 
-      defp handle_message(message, state) do
+      def websocket_info(_any, _arg1, state) do
+        Logger.info("websocket_info")
         {:ok, state}
       end
 
-      def handle_connect(connection, %{notify_on_connect: pid} = state) do
-        send(pid, {:connected, connection})
-        {:ok, state}
-      end
-
-      def handle_disconnect(%{reason: {:local, reason}}, state) do
-        {:ok, state}
+      def websocket_terminate(_arg0, _arg1, _state) do
+        Logger.info("websocket_terminate")
+        :ok
       end
     end
   end
 end
+
+# cast(Client, Frame) ->
+#   gen_statem:cast(Client, {cast_frame, Frame}).
+
+# send(Client, Frame) ->
+#   gen_statem:call(Client, {send, Frame}).
