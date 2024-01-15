@@ -8,14 +8,11 @@ defmodule Xogmios.StateQuery do
   alias Xogmios.StateQuery.Response
   alias Xogmios.StateQuery.Server
 
-  @allowed_queries [:get_current_epoch, :get_era_start]
-
   @query_messages %{
     get_current_epoch: Messages.get_current_epoch(),
     get_era_start: Messages.get_era_start()
   }
 
-  def allowed_queries, do: @allowed_queries
   def query_messages, do: @query_messages
 
   defmacro __using__(_opts) do
