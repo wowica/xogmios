@@ -1,7 +1,11 @@
 defmodule Xogmios.ChainSync do
-  alias Xogmios.ChainSync.Messages
+  @moduledoc """
+  This module interfaces with the Chain Synchronization protocol.
+  """
 
   require Logger
+
+  alias Xogmios.ChainSync.Messages
 
   @callback handle_block(map(), any()) ::
               {:ok, :next_block, map()} | {:ok, map()} | {:ok, :close, map()}
@@ -9,8 +13,11 @@ defmodule Xogmios.ChainSync do
   defmacro __using__(_opts) do
     quote do
       @behaviour Xogmios.ChainSync
-      use Xogmios.Connection, :chain_sync
+
+      use Xogmios.ChainSync.Connection
+
       require Logger
+
       @name __MODULE__
 
       def handle_message(%{"id" => "start"} = message, state) do
