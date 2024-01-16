@@ -30,16 +30,18 @@ defmodule Xogmios.ChainSync.Connection do
       def do_start_link(opts) do
         url = Keyword.fetch!(opts, :url)
 
-        initial_state =
-          opts
-          |> Enum.into(%{})
-          |> Map.merge(%{handler: __MODULE__})
+        state = Keyword.merge(opts, handler: __MODULE__)
 
-        :websocket_client.start_link(url, __MODULE__, initial_state)
+        :websocket_client.start_link(url, __MODULE__, state)
       end
 
       @impl true
-      def init(initial_state) do
+      def init(state) do
+        initial_state =
+          state
+          |> Enum.into(%{})
+          |> Map.merge(%{handler: __MODULE__})
+
         {:once, initial_state}
       end
 
