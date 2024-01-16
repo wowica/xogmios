@@ -2,7 +2,9 @@
 
 ![CI Status](https://github.com/wowica/xogmios/actions/workflows/ci.yml/badge.svg)
 
-An Elixir client for [Ogmios](https://github.com/CardanoSolutions/ogmios). This project is highly experimental. It currently only partially supports the chain sync Ouroboros mini-protocol.
+An Elixir client for Cardano's [Ogmios](https://github.com/CardanoSolutions/ogmios).
+
+Currently supports the **Chain Synchronization** and **State Query** Ouroboros mini-protocol.
 
 ## Installing
 
@@ -64,19 +66,20 @@ defmodule MyApp.ChainSyncClient do
 
   require Logger
 
-  def start_link(opts),
-    do: start_connection(opts)
+  def start_link(opts) do
+    # Initial state currently has to be defined here
+    # and passed as argument to start_connection
+    initial_state = [counter: 3]
 
-  @impl true
-  def init(_args) do
-    {:ok, %{counter: 3}}
+    opts
+    |> Keyword.merge(initial_state)
+    |> start_connection()
   end
 
   @impl true
   def handle_block(block, %{counter: counter} = state) when counter > 1 do
     Logger.info("handle_block #{block["height"]}")
-    new_state = Map.merge(state, %{counter: counter - 1})
-    {:ok, :next_block, new_state}
+    {:ok, :next_block, %{state | counter: counter - 1}}
   end
 
   @impl true
@@ -86,6 +89,8 @@ defmodule MyApp.ChainSyncClient do
   end
 end
 ```
+
+See more examples in the [examples](./examples/) folder.
 
 ## Test
 
