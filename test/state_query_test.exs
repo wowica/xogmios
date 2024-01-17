@@ -1,13 +1,13 @@
 defmodule Xogmios.StateQueryTest do
   use ExUnit.Case
 
-  @ws_url StateQuery.TestServer.get_url()
+  @ws_url TestServer.get_url()
 
   setup_all do
-    {:ok, _server} = StateQuery.TestServer.start()
+    {:ok, _server} = TestServer.start(handler: StateQuery.TestHandler)
 
     on_exit(fn ->
-      StateQuery.TestServer.shutdown()
+      TestServer.shutdown()
     end)
 
     :ok

@@ -1,4 +1,4 @@
-defmodule ChainSync.TestServer do
+defmodule TestServer do
   @moduledoc false
 
   @default_port 8989
@@ -7,12 +7,12 @@ defmodule ChainSync.TestServer do
     "ws://localhost:#{port}/ws"
   end
 
-  def start(port \\ @default_port) do
+  def start(port \\ @default_port, handler: handler) do
     cowboy_server =
       Plug.Cowboy.http(
         WebSocket.Router,
         [scheme: :http],
-        ChainSync.TestRouter.options(port: port)
+        TestRouter.options(port: port, handler: handler)
       )
 
     cowboy_server =

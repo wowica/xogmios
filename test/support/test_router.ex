@@ -1,4 +1,4 @@
-defmodule StateQuery.TestRouter do
+defmodule TestRouter do
   @moduledoc false
 
   use Plug.Router
@@ -14,7 +14,7 @@ defmodule StateQuery.TestRouter do
     dispatch = [
       {:_,
        [
-         {"/ws/[...]", StateQuery.TestHandler, []}
+         {"/ws/[...]", opts[:handler], []}
        ]}
     ]
 

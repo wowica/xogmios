@@ -1,13 +1,13 @@
 defmodule Xogmios.ChainSyncTest do
   use ExUnit.Case
 
-  @ws_url ChainSync.TestServer.get_url()
+  @ws_url TestServer.get_url()
 
   setup_all do
-    {:ok, _server} = ChainSync.TestServer.start()
+    {:ok, _server} = TestServer.start(handler: ChainSync.TestHandler)
 
     on_exit(fn ->
-      ChainSync.TestServer.shutdown()
+      TestServer.shutdown()
     end)
 
     :ok
