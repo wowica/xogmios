@@ -24,17 +24,6 @@ defmodule Xogmios.ChainSync.Connection do
         }
       end
 
-      def start_connection(opts),
-        do: do_start_link(opts)
-
-      def do_start_link(opts) do
-        url = Keyword.fetch!(opts, :url)
-
-        state = Keyword.merge(opts, handler: __MODULE__)
-
-        :websocket_client.start_link(url, __MODULE__, state)
-      end
-
       @impl true
       def init(state) do
         initial_state =

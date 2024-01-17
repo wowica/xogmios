@@ -14,10 +14,11 @@ defmodule XogmiosTest do
   end
 
   defmodule DummyClient do
-    use Xogmios.ChainSync
+    use Xogmios, :chain_sync
 
-    def start_link(opts),
-      do: start_connection(opts)
+    def start_link(opts) do
+      Xogmios.start_chain_sync_link(__MODULE__, opts)
+    end
 
     @impl true
     def handle_block(_block, state) do
