@@ -13,7 +13,8 @@ defmodule StateQueryClient do
 
   Then invoke functions:
    * StateQueryClient.get_current_epoch()
-   * StateQueryClient.get_era_start() # not yet supported
+   * StateQueryClient.get_era_start()
+   * StateQueryClient.get_bananas() # Returns error message
 
   Not all queries are supported yet.
   """
@@ -32,7 +33,14 @@ defmodule StateQueryClient do
   end
 
   def get_era_start() do
-    case send_query(:era_start) do
+    case send_query(:get_era_start) do
+      {:ok, result} -> result
+      {:error, reason} -> "Something went wrong #{inspect(reason)}"
+    end
+  end
+
+  def get_bananas() do
+    case send_query(:get_bananas) do
       {:ok, result} -> result
       {:error, reason} -> "Something went wrong #{inspect(reason)}"
     end
