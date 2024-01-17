@@ -13,7 +13,7 @@ Add the dependency to `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:xogmios, git: "https://github.com/wowica/xogmios"}
+    {:xogmios, github: "wowica/xogmios", ref: "403384c"}
   ]
 end
 ```
@@ -24,5 +24,5 @@ See [ChainSyncClient](./examples/chain_sync_client.ex) and [StateQueryClient](./
 
 ## Test
 
-Run `mix test`. Tests do not rely on a running OGMIOS instance.
+Run `mix test`. Tests do NOT rely on a running Ogmios instance.
 
