@@ -26,6 +26,13 @@ defmodule Xogmios.StateQueryTest do
         {:error, reason} -> "Something went wrong #{inspect(reason)}"
       end
     end
+
+    def get_bananas() do
+      case send_query(:get_bananas) do
+        {:ok, result} -> result
+        {:error, reason} -> "Something went wrong #{inspect(reason)}"
+      end
+    end
   end
 
   test "returns current epoch" do
@@ -33,5 +40,6 @@ defmodule Xogmios.StateQueryTest do
     assert is_pid(pid)
     Process.sleep(1_000)
     assert DummyClient.get_current_epoch() == 333
+    assert DummyClient.get_bananas() =~ "Something went wrong"
   end
 end
