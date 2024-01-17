@@ -3,12 +3,16 @@ defmodule Xogmios.ChainSync do
   This module interfaces with the Chain Synchronization protocol.
   """
 
-  require Logger
-
   alias Xogmios.ChainSync.Messages
 
   @callback handle_block(map(), any()) ::
               {:ok, :next_block, map()} | {:ok, map()} | {:ok, :close, map()}
+
+  def start_link(client, opts) do
+    url = Keyword.fetch!(opts, :url)
+    state = Keyword.merge(opts, handler: client)
+    :websocket_client.start_link(url, client, state)
+  end
 
   defmacro __using__(_opts) do
     quote do
@@ -17,8 +21,6 @@ defmodule Xogmios.ChainSync do
       use Xogmios.ChainSync.Connection
 
       require Logger
-
-      @name __MODULE__
 
       def handle_message(%{"id" => "start"} = message, state) do
         %{
@@ -64,7 +66,6 @@ defmodule Xogmios.ChainSync do
       end
 
       def handle_message({:text, message}, state) do
-        # Logger.info("fallback handle message #{inspect(message)}")
         {:close, state}
       end
     end

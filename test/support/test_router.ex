@@ -1,4 +1,4 @@
-defmodule ChainSync.TestRouter do
+defmodule TestRouter do
   @moduledoc false
 
   use Plug.Router
@@ -14,7 +14,7 @@ defmodule ChainSync.TestRouter do
     dispatch = [
       {:_,
        [
-         {"/ws/[...]", ChainSync.TestHandler, []}
+         {"/ws/[...]", opts[:handler], []}
        ]}
     ]
 

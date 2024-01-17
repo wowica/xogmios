@@ -8,12 +8,29 @@ defmodule Xogmios.StateQuery do
   alias Xogmios.StateQuery.Response
   alias Xogmios.StateQuery.Server
 
+  def start_link(client, opts) do
+    GenServer.start_link(client, opts, name: client)
+  end
+
   @query_messages %{
     get_current_epoch: Messages.get_current_epoch(),
     get_era_start: Messages.get_era_start()
   }
 
-  def query_messages, do: @query_messages
+  @allowed_queries Map.keys(@query_messages)
+
+  def fetch_query_message(query) when query in @allowed_queries,
+    do: Map.fetch(@query_messages, query)
+
+  def fetch_query_message(query),
+    do: {:error, "Unsupported query #{inspect(query)}"}
+
+  def call_query(client, message) do
+    case GenServer.call(client, {:send_message, message}) do
+      {:ok, response} -> {:ok, response}
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
   defmacro __using__(_opts) do
     quote do
@@ -27,20 +44,11 @@ defmodule Xogmios.StateQuery do
       """
       @spec send_query(term(), term()) :: {:ok, any()} | {:error, any()}
       def send_query(client \\ __MODULE__, query) do
-        with {:ok, message} <- Map.fetch(StateQuery.query_messages(), query),
-             {:ok, %Response{} = response} <- GenServer.call(client, {:send_message, message}) do
+        with {:ok, message} <- StateQuery.fetch_query_message(query),
+             {:ok, %Response{} = response} <- StateQuery.call_query(client, message) do
           {:ok, response.result}
-        else
-          :error -> {:error, "Unsupported query"}
-          {:error, _reason} -> {:error, "Error sending query"}
         end
       end
-
-      def start_connection(opts),
-        do: do_start_link(opts)
-
-      def do_start_link(args),
-        do: GenServer.start_link(__MODULE__, args, name: __MODULE__)
 
       ## Callbacks
 
@@ -59,7 +67,7 @@ defmodule Xogmios.StateQuery do
 
       @impl true
       def handle_call({:send_message, message}, from, state) do
-        send(state.ws_pid, {:store_caller, from})
+        {:store_caller, _from} = send(state.ws_pid, {:store_caller, from})
         :ok = :websocket_client.send(state.ws_pid, {:text, message})
         {:noreply, state}
       end
