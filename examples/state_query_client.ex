@@ -13,14 +13,16 @@ defmodule StateQueryClient do
 
   Then invoke functions:
    * StateQueryClient.get_current_epoch()
-   * StateQueryClient.get_era_start()
+   * StateQueryClient.get_era_start() # not yet supported
 
   Not all queries are supported yet.
   """
-  use Xogmios.StateQuery
 
-  def start_link(opts),
-    do: start_connection(opts)
+  use Xogmios, :state_query
+
+  def start_link(opts) do
+    Xogmios.start_state_link(__MODULE__, opts)
+  end
 
   def get_current_epoch() do
     case send_query(:get_current_epoch) do

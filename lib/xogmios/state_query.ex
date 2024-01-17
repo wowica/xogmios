@@ -67,7 +67,7 @@ defmodule Xogmios.StateQuery do
 
       @impl true
       def handle_call({:send_message, message}, from, state) do
-        send(state.ws_pid, {:store_caller, from})
+        {:store_caller, _from} = send(state.ws_pid, {:store_caller, from})
         :ok = :websocket_client.send(state.ws_pid, {:text, message})
         {:noreply, state}
       end
