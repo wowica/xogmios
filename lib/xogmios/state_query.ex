@@ -48,20 +48,6 @@ defmodule Xogmios.StateQuery do
     quote do
       use GenServer
 
-      ## Client API
-
-      # @doc """
-      # Sends a State Query call to the server and returns a response.
-      # This function is synchornous.
-      # """
-      # @spec send_query(term(), term()) :: {:ok, any()} | {:error, any()}
-      # def send_query(client \\ __MODULE__, query) do
-      #   with {:ok, message} <- StateQuery.fetch_query_message(query),
-      #        {:ok, %Response{} = response} <- StateQuery.call_query(client, message) do
-      #     {:ok, response.result}
-      #   end
-      # end
-
       ## Callbacks
 
       @impl true
