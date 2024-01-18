@@ -3,7 +3,6 @@ defmodule Xogmios.StateQuery do
   This module interfaces with the State Query protocol.
   """
 
-  alias Xogmios.StateQuery
   alias Xogmios.StateQuery.Messages
   alias Xogmios.StateQuery.Response
   alias Xogmios.StateQuery.Server
@@ -19,13 +18,26 @@ defmodule Xogmios.StateQuery do
 
   @allowed_queries Map.keys(@query_messages)
 
-  def fetch_query_message(query) when query in @allowed_queries,
+  @doc """
+  Sends a State Query call to the server and returns a response. This function is synchornous and takes two arguments:
+  1. (Optional) A process reference. If none given, it defaults to __MODULE__.
+  2. The query to run. It currently accepts the following values: `:get_current_epoch`, `:get_era_start`.
+  """
+  @spec send_query(pid() | atom(), atom()) :: {:ok, any()} | {:error, any()}
+  def send_query(client \\ __MODULE__, query) do
+    with {:ok, message} <- fetch_query_message(query),
+         {:ok, %Response{} = response} <- call_query(client, message) do
+      {:ok, response.result}
+    end
+  end
+
+  defp fetch_query_message(query) when query in @allowed_queries,
     do: Map.fetch(@query_messages, query)
 
-  def fetch_query_message(query),
+  defp fetch_query_message(query),
     do: {:error, "Unsupported query #{inspect(query)}"}
 
-  def call_query(client, message) do
+  defp call_query(client, message) do
     case GenServer.call(client, {:send_message, message}) do
       {:ok, response} -> {:ok, response}
       {:error, reason} -> {:error, reason}
@@ -35,20 +47,6 @@ defmodule Xogmios.StateQuery do
   defmacro __using__(_opts) do
     quote do
       use GenServer
-
-      ## Client API
-
-      @doc """
-      Sends a State Query call to the server and returns a response.
-      This function is synchornous.
-      """
-      @spec send_query(term(), term()) :: {:ok, any()} | {:error, any()}
-      def send_query(client \\ __MODULE__, query) do
-        with {:ok, message} <- StateQuery.fetch_query_message(query),
-             {:ok, %Response{} = response} <- StateQuery.call_query(client, message) do
-          {:ok, response.result}
-        end
-      end
 
       ## Callbacks
 

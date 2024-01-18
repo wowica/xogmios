@@ -1,7 +1,6 @@
 defmodule Xogmios.StateQuery.Messages do
-  @moduledoc """
-  This module returns messages for the State Query protocol
-  """
+  @moduledoc false
+  # This module returns messages for the State Query protocol
 
   alias Jason.DecodeError
 
