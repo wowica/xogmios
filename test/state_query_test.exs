@@ -15,23 +15,18 @@ defmodule Xogmios.StateQueryTest do
 
   defmodule DummyClient do
     use Xogmios, :state_query
+    alias Xogmios.StateQuery
 
     def start_link(opts) do
       Xogmios.start_state_link(__MODULE__, opts)
     end
 
-    def get_current_epoch() do
-      case send_query(:get_current_epoch) do
-        {:ok, result} -> result
-        {:error, reason} -> "Something went wrong #{inspect(reason)}"
-      end
+    def get_current_epoch(pid \\ __MODULE__) do
+      StateQuery.send_query(pid, :get_current_epoch)
     end
 
-    def get_bananas() do
-      case send_query(:get_bananas) do
-        {:ok, result} -> result
-        {:error, reason} -> "Something went wrong #{inspect(reason)}"
-      end
+    def unsupported_query(pid \\ __MODULE__) do
+      StateQuery.send_query(pid, :unsupported_query)
     end
   end
 
@@ -39,7 +34,9 @@ defmodule Xogmios.StateQueryTest do
     pid = start_supervised!({DummyClient, url: @ws_url})
     assert is_pid(pid)
     Process.sleep(1_000)
-    assert DummyClient.get_current_epoch() == 333
-    assert DummyClient.get_bananas() =~ "Something went wrong"
+    expected_epoch = 333
+    assert {:ok, ^expected_epoch} = DummyClient.get_current_epoch()
+    assert {:error, error_message} = DummyClient.unsupported_query()
+    assert error_message == "Unsupported query :unsupported_query"
   end
 end

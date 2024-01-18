@@ -19,8 +19,8 @@ defmodule Xogmios.MixProject do
           ~r/\.TestConnection/,
           ~r/\.TestHandler/,
           ~r/\.TestServer/,
-          Xogmios.ClientExampleA,
-          Xogmios.ClientExampleB
+          ChainSyncClient,
+          StateQueryClient
         ]
       ],
       package: package(),

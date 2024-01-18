@@ -1,9 +1,8 @@
 defmodule Xogmios.StateQuery.Server do
-  @moduledoc """
-  This module implements the callbacks necessary for receiving asynchronous responses from
-  the WebSocket server. It acts as an synchronous interface for clients of Xogmios.StateQuery.
-  It uses GenServer.reply/2 to respond to GenServer.call/2 calls from Xogmios.StateQuery.send_query/2.
-  """
+  @moduledoc false
+  # This module implements the callbacks necessary for receiving asynchronous responses from
+  # the WebSocket server. It acts as an synchronous interface for clients of Xogmios.StateQuery.
+  # It uses GenServer.reply/2 to respond to GenServer.call/2 calls from Xogmios.StateQuery.send_query/2.
 
   @behaviour :websocket_client
 
