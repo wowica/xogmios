@@ -31,19 +31,21 @@ defmodule Xogmios.ChainSync.Connection do
           |> Enum.into(%{})
           |> Map.merge(%{handler: __MODULE__})
 
-        {:once, initial_state}
+        {:reconnect, initial_state}
       end
 
       @impl true
       def onconnect(_arg, state) do
+        IO.puts("onconnect")
         start_message = Messages.next_block_start()
         :websocket_client.cast(self(), {:text, start_message})
         {:ok, state}
       end
 
       @impl true
-      def ondisconnect(_reason, state) do
-        {:ok, state}
+      def ondisconnect(reason, state) do
+        IO.puts("ondisconnect #{inspect(reason)}")
+        {:reconnect, 5_000, state}
       end
 
       @impl true
@@ -70,6 +72,7 @@ defmodule Xogmios.ChainSync.Connection do
 
       @impl true
       def websocket_terminate(_arg0, _arg1, _state) do
+        IO.puts("websocket_terminate")
         :ok
       end
     end
