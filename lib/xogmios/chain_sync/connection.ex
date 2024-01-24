@@ -42,7 +42,7 @@ defmodule Xogmios.ChainSync.Connection do
       end
 
       @impl true
-      def ondisconnect(reason, state) do
+      def ondisconnect(_reason, state) do
         {:ok, state}
       end
 
@@ -70,7 +70,6 @@ defmodule Xogmios.ChainSync.Connection do
 
       @impl true
       def websocket_terminate(_arg0, _arg1, _state) do
-        IO.puts("websocket_terminate")
         :ok
       end
     end
