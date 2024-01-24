@@ -36,7 +36,6 @@ defmodule Xogmios.ChainSync.Connection do
 
       @impl true
       def onconnect(_arg, state) do
-        IO.puts("onconnect")
         start_message = Messages.next_block_start()
         :websocket_client.cast(self(), {:text, start_message})
         {:ok, state}
@@ -44,8 +43,7 @@ defmodule Xogmios.ChainSync.Connection do
 
       @impl true
       def ondisconnect(reason, state) do
-        IO.puts("ondisconnect #{inspect(reason)}")
-        {:reconnect, 5_000, state}
+        {:ok, state}
       end
 
       @impl true
