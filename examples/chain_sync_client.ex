@@ -17,6 +17,17 @@ defmodule ChainSyncClient do
 
   def start_link(opts) do
     initial_state = [counter: 3]
+    ### See examples below on how to sync
+    ### from different points of the chain:
+    # initial_state = [sync_from: :babbage]
+    # initial_state = [
+    #   sync_from: %{
+    #     point: %{
+    #       slot: 114_127_654,
+    #       id: "b0ff1e2bfc326a7f7378694b1f2693233058032bfb2798be2992a0db8b143099"
+    #     }
+    #   }
+    # ]
     opts = Keyword.merge(opts, initial_state)
     Xogmios.start_chain_sync_link(__MODULE__, opts)
   end

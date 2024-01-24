@@ -31,7 +31,7 @@ defmodule Xogmios.ChainSync.Connection do
           |> Enum.into(%{})
           |> Map.merge(%{handler: __MODULE__})
 
-        {:once, initial_state}
+        {:reconnect, initial_state}
       end
 
       @impl true

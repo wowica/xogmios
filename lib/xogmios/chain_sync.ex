@@ -9,9 +9,9 @@ defmodule Xogmios.ChainSync do
               {:ok, :next_block, map()} | {:ok, map()} | {:ok, :close, map()}
 
   def start_link(client, opts) do
-    url = Keyword.fetch!(opts, :url)
-    state = Keyword.merge(opts, handler: client)
-    :websocket_client.start_link(url, client, state)
+    {url, opts} = Keyword.pop(opts, :url)
+    initial_state = Keyword.merge(opts, handler: client)
+    :websocket_client.start_link(url, client, initial_state)
   end
 
   defmacro __using__(_opts) do
@@ -28,7 +28,25 @@ defmodule Xogmios.ChainSync do
           "result" => %{"direction" => "backward", "tip" => tip}
         } = message
 
-        message = Messages.find_intersection(tip["slot"], tip["id"])
+        message =
+          case state[:sync_from] do
+            nil ->
+              # No option passed, sync with current tip
+              Messages.find_intersection(tip["slot"], tip["id"])
+
+            %{point: point} ->
+              # Sync with a specific point
+              Messages.find_intersection(point.slot, point.id)
+
+            cardano_era when cardano_era in [:origin, :byron] ->
+              # Sync with origin
+              Messages.find_origin()
+
+            cardano_era when is_atom(cardano_era) ->
+              # Sync with a particular era bound
+              Messages.last_block_from(cardano_era)
+          end
+
         {:reply, {:text, message}, state}
       end
 
