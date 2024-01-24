@@ -43,7 +43,7 @@ defmodule Xogmios.ChainSync.Connection do
 
       @impl true
       def ondisconnect(_reason, state) do
-        {:reconnect, 5_000, state}
+        {:ok, state}
       end
 
       @impl true
