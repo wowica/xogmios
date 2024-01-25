@@ -6,7 +6,15 @@ An Elixir client for [Ogmios](https://github.com/CardanoSolutions/ogmios).
 
 > Ogmios is a lightweight bridge interface for a Cardano node. It offers a WebSockets API that enables local clients to speak Ouroboros' mini-protocols via JSON/RPC. - https://ogmios.dev/
 
-It currently only partially supports the **Chain Synchronization** and **State Query** mini-protocols. See [Examples](#examples) section below for information on how to use it.
+Mini-Protocols supported by this library:
+
+- [x] Chain Synchronization
+- [ ] State Query (partially supported)
+- [ ] Mempool Monitoring
+- [ ] Tx Submission
+
+
+See [Examples](#examples) section below for information on how to use.
 
 ## Installing
 
