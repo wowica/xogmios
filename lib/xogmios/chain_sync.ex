@@ -8,6 +8,8 @@ defmodule Xogmios.ChainSync do
   @callback handle_block(map(), any()) ::
               {:ok, :next_block, map()} | {:ok, map()} | {:ok, :close, map()}
 
+  # The keepalive option is used to maintain the connection active.
+  # This is important because proxies might close idle connections after a few seconds.
   @keepalive_in_ms 5_000
 
   def start_link(client, opts) do
