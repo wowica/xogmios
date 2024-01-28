@@ -15,7 +15,10 @@ defmodule Xogmios.ChainSync do
   def start_link(client, opts) do
     {url, opts} = Keyword.pop(opts, :url)
     initial_state = Keyword.merge(opts, handler: client)
-    :websocket_client.start_link(url, client, initial_state, keepalive: @keepalive_in_ms)
+
+    :websocket_client.start_link({:local, client}, url, client, initial_state,
+      keepalive: @keepalive_in_ms
+    )
   end
 
   defmacro __using__(_opts) do
