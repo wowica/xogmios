@@ -6,6 +6,8 @@ defmodule Xogmios.ChainSync.Connection do
 
   alias Xogmios.ChainSync.Messages
 
+  require Logger
+
   defmacro __using__(_opts) do
     quote do
       @behaviour :websocket_client
@@ -38,11 +40,13 @@ defmodule Xogmios.ChainSync.Connection do
       def onconnect(_arg, state) do
         start_message = Messages.next_block_start()
         :websocket_client.cast(self(), {:text, start_message})
+        Logger.debug("onconnect")
         {:ok, state}
       end
 
       @impl true
-      def ondisconnect(_reason, state) do
+      def ondisconnect(reason, state) do
+        Logger.debug("ondisconnect #{inspect(reason)}")
         {:reconnect, 5_000, state}
       end
 
@@ -65,11 +69,13 @@ defmodule Xogmios.ChainSync.Connection do
 
       @impl true
       def websocket_info(_any, _arg1, state) do
+        Logger.debug("websocket_info")
         {:ok, state}
       end
 
       @impl true
       def websocket_terminate(_arg0, _arg1, _state) do
+        Logger.debug("websocket_terminate")
         :ok
       end
     end
