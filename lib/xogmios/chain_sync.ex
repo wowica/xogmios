@@ -8,6 +8,9 @@ defmodule Xogmios.ChainSync do
   @callback handle_block(map(), any()) ::
               {:ok, :next_block, map()} | {:ok, map()} | {:ok, :close, map()}
 
+  @callback handle_connect(map()) :: {:ok, map()}
+  @callback handle_disconnect(String.t(), map()) :: :ok
+
   # The keepalive option is used to maintain the connection active.
   # This is important because proxies might close idle connections after a few seconds.
   @keepalive_in_ms 5_000
@@ -28,6 +31,10 @@ defmodule Xogmios.ChainSync do
       use Xogmios.ChainSync.Connection
 
       require Logger
+
+      def handle_connect(state), do: {:ok, state}
+      def handle_disconnect(_reason, _state), do: :ok
+      defoverridable handle_connect: 1, handle_disconnect: 2
 
       def handle_message(%{"id" => "start"} = message, state) do
         %{
