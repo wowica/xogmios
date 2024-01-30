@@ -53,6 +53,9 @@ defmodule Xogmios.ChainSync.Connection do
       @impl true
       def ondisconnect(reason, state) do
         Logger.debug("ondisconnect #{inspect(reason)}")
+        # The following reason was given for
+        # closing the connection
+        # {:remote, :closed} = reason
 
         case state.handler.handle_disconnect(reason, state) do
           :ok ->
