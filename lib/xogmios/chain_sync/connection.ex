@@ -15,6 +15,7 @@ defmodule Xogmios.ChainSync.Connection do
       require Logger
 
       @name __MODULE__
+      @reconnect_interval 5_000
 
       def child_spec(opts) do
         %{
@@ -52,17 +53,12 @@ defmodule Xogmios.ChainSync.Connection do
 
       @impl true
       def ondisconnect(reason, state) do
-        Logger.debug("ondisconnect #{inspect(reason)}")
-        # The following reason was given for
-        # closing the connection
-        # {:remote, :closed} = reason
-
         case state.handler.handle_disconnect(reason, state) do
-          :ok ->
-            {:reconnect, 5_000, state}
+          {:ok, state} ->
+            {:ok, state}
 
-          _ ->
-            {:reconnect, 5_000, state}
+          {:reconnect, reconnect_interval_in_ms, new_state} ->
+            {:reconnect, reconnect_interval_in_ms, new_state}
         end
       end
 
@@ -85,13 +81,11 @@ defmodule Xogmios.ChainSync.Connection do
 
       @impl true
       def websocket_info(_any, _arg1, state) do
-        Logger.debug("websocket_info")
         {:ok, state}
       end
 
       @impl true
       def websocket_terminate(_arg0, _arg1, _state) do
-        Logger.debug("websocket_terminate")
         :ok
       end
     end

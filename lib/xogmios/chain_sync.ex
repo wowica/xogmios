@@ -33,7 +33,7 @@ defmodule Xogmios.ChainSync do
       require Logger
 
       def handle_connect(state), do: {:ok, state}
-      def handle_disconnect(_reason, _state), do: :ok
+      def handle_disconnect(_reason, state), do: {:ok, state}
       defoverridable handle_connect: 1, handle_disconnect: 2
 
       def handle_message(%{"id" => "start"} = message, state) do
