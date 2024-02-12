@@ -18,14 +18,13 @@ defmodule Xogmios.ChainSync.Connection do
       @reconnect_interval 5_000
 
       def child_spec(opts) do
-        Supervisor.child_spec(
-          %{},
+        %{
           id: __MODULE__,
           start: {__MODULE__, :start_link, [opts]},
           shutdown: 5_000,
           restart: Keyword.get(opts, :restart, :transient),
           type: :worker
-        )
+        }
       end
 
       @impl true

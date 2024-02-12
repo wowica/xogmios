@@ -9,7 +9,7 @@ An Elixir client for [Ogmios](https://github.com/CardanoSolutions/ogmios).
 Mini-Protocols supported by this library:
 
 - [x] Chain Synchronization
-- [ ] State Query (partially supported)
+- [x] State Query (partially supported)
 - [ ] Mempool Monitoring
 - [ ] Tx Submission
 
