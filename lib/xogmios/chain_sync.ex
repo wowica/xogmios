@@ -7,6 +7,10 @@ defmodule Xogmios.ChainSync do
 
   @callback handle_block(map(), any()) ::
               {:ok, :next_block, map()} | {:ok, map()} | {:ok, :close, map()}
+  @callback handle_connect(map()) ::
+              {:ok, map()}
+  @callback handle_disconnect(String.t(), map()) ::
+              {:ok, map()} | {:reconnect, non_neg_integer(), map()}
 
   # The keepalive option is used to maintain the connection active.
   # This is important because proxies might close idle connections after a few seconds.
@@ -15,7 +19,10 @@ defmodule Xogmios.ChainSync do
   def start_link(client, opts) do
     {url, opts} = Keyword.pop(opts, :url)
     initial_state = Keyword.merge(opts, handler: client)
-    :websocket_client.start_link(url, client, initial_state, keepalive: @keepalive_in_ms)
+
+    :websocket_client.start_link({:local, client}, url, client, initial_state,
+      keepalive: @keepalive_in_ms
+    )
   end
 
   defmacro __using__(_opts) do
@@ -25,6 +32,10 @@ defmodule Xogmios.ChainSync do
       use Xogmios.ChainSync.Connection
 
       require Logger
+
+      def handle_connect(state), do: {:ok, state}
+      def handle_disconnect(_reason, state), do: {:ok, state}
+      defoverridable handle_connect: 1, handle_disconnect: 2
 
       def handle_message(%{"id" => "start"} = message, state) do
         %{
