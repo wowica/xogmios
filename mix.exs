@@ -2,7 +2,7 @@ defmodule Xogmios.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/wowica/xogmios"
-  @version "0.0.1"
+  @version "0.1.0"
 
   def project do
     [
@@ -16,7 +16,6 @@ defmodule Xogmios.MixProject do
       test_coverage: [
         ignore_modules: [
           ~r/\.TestRouter/,
-          ~r/\.TestConnection/,
           ~r/\.TestHandler/,
           ~r/\.TestServer/,
           ChainSyncClient,
@@ -55,6 +54,7 @@ defmodule Xogmios.MixProject do
 
   defp package do
     [
+      description: "An Elixir client for Ogmios",
       maintainers: ["Carlos Souza"],
       links: %{"GitHub" => @source_url}
     ]

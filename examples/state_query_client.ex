@@ -22,17 +22,14 @@ defmodule StateQueryClient do
   use Xogmios, :state_query
   alias Xogmios.StateQuery
 
-  @spec start_link(keyword()) :: {:ok, pid()} | {:error, any()}
   def start_link(opts) do
     Xogmios.start_state_link(__MODULE__, opts)
   end
 
-  @spec get_current_epoch(pid() | atom()) :: {:ok, map()} | {:error, map()}
   def get_current_epoch(pid \\ __MODULE__) do
     StateQuery.send_query(pid, :get_current_epoch)
   end
 
-  @spec get_era_start(pid() | atom()) :: {:ok, map()} | {:error, map()}
   def get_era_start(pid \\ __MODULE__) do
     StateQuery.send_query(pid, :get_era_start)
   end
