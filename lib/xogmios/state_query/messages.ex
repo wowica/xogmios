@@ -1,11 +1,12 @@
 defmodule Xogmios.StateQuery.Messages do
-  @moduledoc false
-  # This module returns messages for the State Query protocol
+  @moduledoc """
+  This module contains messages for the State Query protocol
+  """
 
   alias Jason.DecodeError
 
   @doc """
-  Returns point to be used by acquire_ledger_state/1
+  Returns point to be used by `acquire_ledger_state/1`
   """
   def get_tip do
     json = ~S"""
@@ -41,7 +42,7 @@ defmodule Xogmios.StateQuery.Messages do
   end
 
   @doc """
-  Returns current epoch
+  Query current epoch
   """
   def get_current_epoch do
     json = ~S"""
@@ -55,6 +56,9 @@ defmodule Xogmios.StateQuery.Messages do
     json
   end
 
+  @doc """
+  Query start of the current era
+  """
   def get_era_start do
     json = ~S"""
     {

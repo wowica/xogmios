@@ -23,7 +23,7 @@ defmodule Xogmios.ChainSyncTest do
     @impl true
     def handle_block(_block, state) do
       send(state.test_handler, :handle_block)
-      {:ok, :close, state}
+      {:close, state}
     end
   end
 

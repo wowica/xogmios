@@ -5,17 +5,49 @@ defmodule Xogmios.ChainSync do
 
   alias Xogmios.ChainSync.Messages
 
-  @callback handle_block(map(), any()) ::
-              {:ok, :next_block, map()} | {:ok, map()} | {:ok, :close, map()}
-  @callback handle_connect(map()) ::
-              {:ok, map()}
-  @callback handle_disconnect(String.t(), map()) ::
-              {:ok, map()} | {:reconnect, non_neg_integer(), map()}
+  @doc """
+  Invoked when a new block is emitted. This callback is required.
+
+  Returning `{:ok, :next_block, new_state}` will request the next block once it's made available.
+
+  Returning `{:ok, new_state}` will not request anymore blocks.
+
+  Returning `{:ok, :close, new_state}` will close the connection to the server.
+  """
+  @callback handle_block(block :: map(), state) ::
+              {:ok, :next_block, new_state}
+              | {:ok, new_state}
+              | {:close, new_state}
+            when state: term(), new_state: term()
+
+  @doc """
+  Invoked upon connecting to the server. This callback is optional.
+  """
+  @callback handle_connect(state) :: {:ok, new_state}
+            when state: term(), new_state: term()
+
+  @doc """
+  Invoked upon disconnecting from the server. This callback is optional.
+
+  Returning `{:ok, new_state}` will allow the connection to close.
+
+  Returning `{:reconnect, interval_in_ms}` will attempt a reconnection after `interval_in_ms`
+  """
+  @callback handle_disconnect(reason :: String.t(), state) ::
+              {:ok, new_state}
+              | {:reconnect, interval_in_ms :: non_neg_integer(), new_state}
+            when state: term(), new_state: term()
 
   # The keepalive option is used to maintain the connection active.
   # This is important because proxies might close idle connections after a few seconds.
   @keepalive_in_ms 5_000
 
+  @doc """
+  Starts a new Chain Sync process linked to the current process.
+
+  This function should not be called directly, but rather via `Xogmios.start_chain_sync_link/2`
+  """
+  @spec start_link(module(), start_options :: Keyword.t()) :: {:ok, pid()} | {:error, term()}
   def start_link(client, opts) do
     {url, opts} = Keyword.pop(opts, :url)
     initial_state = Keyword.merge(opts, handler: client)
@@ -90,7 +122,7 @@ defmodule Xogmios.ChainSync do
           {:ok, new_state} ->
             {:ok, new_state}
 
-          {:ok, :close, new_state} ->
+          {:close, new_state} ->
             {:close, "finished", new_state}
 
           response ->

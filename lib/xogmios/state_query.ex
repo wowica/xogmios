@@ -7,6 +7,12 @@ defmodule Xogmios.StateQuery do
   alias Xogmios.StateQuery.Response
   alias Xogmios.StateQuery.Server
 
+  @doc """
+  Starts a new State Query process linked to the current process.
+
+  This function should not be called directly, but rather via `Xogmios.start_state_link/2`
+  """
+  @spec start_link(module(), start_options :: Keyword.t()) :: GenServer.on_start()
   def start_link(client, opts) do
     GenServer.start_link(client, opts, name: client)
   end
@@ -19,9 +25,14 @@ defmodule Xogmios.StateQuery do
   @allowed_queries Map.keys(@query_messages)
 
   @doc """
-  Sends a State Query call to the server and returns a response. This function is synchornous and takes two arguments:
-  1. (Optional) A process reference. If none given, it defaults to __MODULE__.
-  2. The query to run. It currently accepts the following values: `:get_current_epoch`, `:get_era_start`.
+  Sends a State Query call to the server and returns a response.
+
+  This function is synchronous and takes two arguments:
+
+  1. (Optional) A process reference. If none given, it defaults to the linked process `__MODULE__`.
+  2. The query to run. Support for [all available queries](https://ogmios.dev/mini-protocols/local-state-query/#network)
+  is actively being worked on. For the time being, it only accepts the following values: #{@allowed_queries |> Enum.map(&inspect/1) |> Enum.map(&"`#{&1}`") |> Enum.join(",")}
+
   """
   @spec send_query(pid() | atom(), atom()) :: {:ok, any()} | {:error, any()}
   def send_query(client \\ __MODULE__, query) do
