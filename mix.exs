@@ -55,6 +55,7 @@ defmodule Xogmios.MixProject do
   defp package do
     [
       description: "An Elixir client for Ogmios",
+      licenses: ["Apache-2.0"],
       maintainers: ["Carlos Souza"],
       links: %{"GitHub" => @source_url}
     ]
