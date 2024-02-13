@@ -1,6 +1,9 @@
 # Xogmios
 
 ![CI Status](https://github.com/wowica/xogmios/actions/workflows/ci.yml/badge.svg)
+[![Version](https://img.shields.io/hexpm/v/xogmios.svg)](https://hex.pm/packages/xogmios)
+
+[Docs](https://hexdocs.pm/xogmios/)
 
 An Elixir client for [Ogmios](https://github.com/CardanoSolutions/ogmios).  
 
@@ -14,7 +17,7 @@ Mini-Protocols supported by this library:
 - [ ] Tx Submission
 
 
-See [Examples](#examples) section below for information on how to use.
+See [Examples](#examples) section below for information on how to use this library.
 
 ## Installing
 
@@ -23,16 +26,78 @@ Add the dependency to `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:xogmios, github: "wowica/xogmios"}
+    {:xogmios, "~> 0.1.0"}
   ]
 end
 ```
 
-Not yet available on Hex.
+Add your client module(s) to your application's supervision tree as such:
+
+```elixir
+# file: application.ex
+def start(_type, _args) do
+  children = [
+    {ChainSyncClient, url: "ws://..."},
+    {StateQueryClient, url: "ws://..."},
+  ]
+  #...
+end
+```
+
+The value for the `url` option should be set to the address of your Ogmios instance.
+
+See section below for examples of client modules.
 
 ## Examples
 
-See [ChainSyncClient](./examples/chain_sync_client.ex) and [StateQueryClient](./examples/state_query_client.ex)
+The following is an example of a module that implement the Chain Sync behaviour.  This module syncs with the tip of the chain, reads the next 3 blocks and then closes the connection with the server.
+
+```elixir
+defmodule ChainSyncClient do
+  use Xogmios, :chain_sync
+
+  def start_link(opts) do
+    initial_state = [counter: 3]
+    opts = Keyword.merge(opts, initial_state)
+    Xogmios.start_chain_sync_link(__MODULE__, opts)
+  end
+
+  @impl true
+  def handle_block(block, %{counter: counter} = state) when counter > 1 do
+    IO.puts("handle_block #{block["height"]}")
+    {:ok, :next_block, %{state | counter: counter - 1}}
+  end
+
+  @impl true
+  def handle_block(block, state) do
+    IO.puts("final handle_block #{block["height"]}")
+    {:close, state}
+  end
+end
+```
+
+The following example implements the State Query behaviour and runs queries against the tip of the chain.
+
+```elixir
+defmodule StateQueryClient do
+  use Xogmios, :state_query
+  alias Xogmios.StateQuery
+
+  def start_link(opts) do
+    Xogmios.start_state_link(__MODULE__, opts)
+  end
+
+  def get_current_epoch(pid \\ __MODULE__) do
+    StateQuery.send_query(pid, :get_current_epoch)
+  end
+
+  def get_era_start(pid \\ __MODULE__) do
+    StateQuery.send_query(pid, :get_era_start)
+  end
+end
+```
+
+For examples of applications using this library, see [Blocks](https://github.com/wowica/blocks) and [xogmios_watcher](https://github.com/wowica/xogmios_watcher).
 
 ## Test
 

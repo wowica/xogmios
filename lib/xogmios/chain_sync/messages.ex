@@ -1,11 +1,20 @@
 defmodule Xogmios.ChainSync.Messages do
   @moduledoc """
-  This module returns messages for the Chain Synchronization protocol
+  This module contains messages for the Chain Synchronization protocol
   """
 
   alias Jason.DecodeError
 
+  @doc """
+  Initial message to the server.
+
+  Once the response from this initial message is received, then
+  the client proceeds with the appropriate syncing strategy.
+  """
   def next_block_start() do
+    # The `id:"start"` is returned as part of the message response,
+    # and helps the client determine that this is a "nextBlock" response
+    # to the initial message.
     json = ~S"""
     {
       "jsonrpc": "2.0",
@@ -18,6 +27,9 @@ defmodule Xogmios.ChainSync.Messages do
     json
   end
 
+  @doc """
+  Request next block.
+  """
   def next_block() do
     json = ~S"""
     {
@@ -30,6 +42,10 @@ defmodule Xogmios.ChainSync.Messages do
     json
   end
 
+  @doc """
+  Syncs the client to the given point in the chain,
+  indicated by `slot` and `id`.
+  """
   def find_intersection(slot, id) do
     json = ~s"""
     {
@@ -50,9 +66,12 @@ defmodule Xogmios.ChainSync.Messages do
     json
   end
 
+  @doc """
+  Syncs the client to the origin of the chain.
+  """
   def find_origin do
-    # For finding origin, any value can be passed as a point as long as "origin"
-    # is the first value.
+    # For finding origin, any value can be passed as
+    # a point as long as "origin" is the first value.
     json = ~S"""
     {
       "jsonrpc": "2.0",
@@ -84,6 +103,13 @@ defmodule Xogmios.ChainSync.Messages do
     babbage: {72_316_796, "c58a24ba8203e7629422a24d9dc68ce2ed495420bf40d9dab124373655161a20"}
   }
 
+  @doc """
+  Syncs with a particular era bound.
+
+  Values accepted are #{Map.keys(@era_bounds) |> Enum.map_join(",\n ", fn key -> "`:#{key}`" end)}
+
+  The client will sync with the first block of the given era.
+  """
   def last_block_from(era_name) when is_atom(era_name) do
     case @era_bounds[era_name] do
       {last_slot, last_block_id} -> find_intersection(last_slot, last_block_id)

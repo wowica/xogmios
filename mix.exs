@@ -2,7 +2,7 @@ defmodule Xogmios.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/wowica/xogmios"
-  @version "0.0.1"
+  @version "0.1.0"
 
   def project do
     [
@@ -16,7 +16,6 @@ defmodule Xogmios.MixProject do
       test_coverage: [
         ignore_modules: [
           ~r/\.TestRouter/,
-          ~r/\.TestConnection/,
           ~r/\.TestHandler/,
           ~r/\.TestServer/,
           ChainSyncClient,
@@ -24,9 +23,7 @@ defmodule Xogmios.MixProject do
         ]
       ],
       package: package(),
-
-      # Docs
-      name: "Xogmios"
+      docs: docs()
     ]
   end
 
@@ -46,6 +43,7 @@ defmodule Xogmios.MixProject do
       {:cowboy, "~> 2.10", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4.1", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:jason, "~> 1.4"},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
       {:plug, "~> 1.15", only: :test},
@@ -56,8 +54,19 @@ defmodule Xogmios.MixProject do
 
   defp package do
     [
+      description: "An Elixir client for Ogmios",
+      licenses: ["Apache-2.0"],
       maintainers: ["Carlos Souza"],
       links: %{"GitHub" => @source_url}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      name: "Xogmios",
+      source_url: @source_url,
+      extras: ["README.md"]
     ]
   end
 end
