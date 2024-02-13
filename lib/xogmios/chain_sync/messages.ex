@@ -106,7 +106,7 @@ defmodule Xogmios.ChainSync.Messages do
   @doc """
   Syncs with a particular era bound.
 
-  Values accepted are #{Map.keys(@era_bounds) |> Enum.map(&"`:#{&1}`") |> Enum.join(",\n ")}
+  Values accepted are #{Map.keys(@era_bounds) |> Enum.map_join(",\n ", fn key -> "`:#{key}`" end)}
 
   The client will sync with the first block of the given era.
   """

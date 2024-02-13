@@ -31,7 +31,7 @@ defmodule Xogmios.StateQuery do
 
   1. (Optional) A process reference. If none given, it defaults to the linked process `__MODULE__`.
   2. The query to run. Support for [all available queries](https://ogmios.dev/mini-protocols/local-state-query/#network)
-  is actively being worked on. For the time being, it only accepts the following values: #{@allowed_queries |> Enum.map(&inspect/1) |> Enum.map(&"`#{&1}`") |> Enum.join(",")}
+  is actively being worked on. For the time being, it only accepts the following values: #{@allowed_queries |> Enum.map_join(",", fn query -> "`#{inspect(query)}`" end)}
 
   """
   @spec send_query(pid() | atom(), atom()) :: {:ok, any()} | {:error, any()}
