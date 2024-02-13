@@ -1,6 +1,9 @@
 # Xogmios
 
 ![CI Status](https://github.com/wowica/xogmios/actions/workflows/ci.yml/badge.svg)
+[![Version](https://img.shields.io/hexpm/v/xogmios.svg)](https://hex.pm/packages/xogmios)
+
+[Docs](https://hexdocs.pm/xogmios/)
 
 An Elixir client for [Ogmios](https://github.com/CardanoSolutions/ogmios).  
 
@@ -18,12 +21,12 @@ See [Examples](#examples) section below for information on how to use this libra
 
 ## Installing
 
-Add the dependency to `mix.exs` (not yet available on Hex):
+Add the dependency to `mix.exs`:
 
 ```elixir
 defp deps do
   [
-    {:xogmios, github: "wowica/xogmios"}
+    {:xogmios, "~> 0.1.0"}
   ]
 end
 ```
