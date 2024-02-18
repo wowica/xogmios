@@ -50,7 +50,9 @@ See section below for examples of client modules.
 
 ## Examples
 
-The following is an example of a module that implement the Chain Sync behaviour.  This module syncs with the tip of the chain, reads the next 3 blocks and then closes the connection with the server.
+### Chain Sync
+
+The following is an example of a module that implement the **Chain Sync** behaviour. This module syncs with the tip of the chain, reads the next 3 blocks and then closes the connection with the server.
 
 ```elixir
 defmodule ChainSyncClient do
@@ -76,7 +78,9 @@ defmodule ChainSyncClient do
 end
 ```
 
-The following example illustrates working with the State Query protocol runs queries against the tip of the chain.
+### State Query
+
+The following illustrates working with the **State Query** protocol. It runs queries against the tip of the chain.
 
 ```elixir
 defmodule StateQueryClient do
@@ -93,6 +97,27 @@ defmodule StateQueryClient do
 
   def get_era_start(pid \\ __MODULE__) do
     StateQuery.send_query(pid, :get_era_start)
+  end
+end
+```
+
+### Tx Submission
+
+The following illustrates working with the **Transaction Submission** protocol. It submits a signed transaction, represented as a CBOR, to the Ogmios server.
+
+```elixir
+defmodule TxSubmissionClient do
+  use Xogmios, :tx_submission
+  alias Xogmios.TxSubmission
+
+  def start_link(opts) do
+    Xogmios.start_tx_submission_link(__MODULE__, opts)
+  end
+
+  def submit_tx(pid \\ __MODULE__, cbor) do
+    # The CBOR must be a valid transaction,
+    # properly built and signed
+    TxSubmission.submit_tx(pid, cbor)
   end
 end
 ```
