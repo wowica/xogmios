@@ -45,7 +45,7 @@ defmodule TxSubmission.TestHandler do
         payload =
           Jason.encode!(%{
             "error" => %{
-              "code" => -32602,
+              "code" => -32_602,
               "data" => %{
                 "allegra" =>
                   "invalid or incomplete value of type 'Transaction': Size mismatch when decoding Object / Array. Expected 3, but found 4.",
