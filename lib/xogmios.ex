@@ -18,9 +18,9 @@ defmodule Xogmios do
       end
   """
 
-  alias Xogmios.TxSubmission
   alias Xogmios.ChainSync
   alias Xogmios.StateQuery
+  alias Xogmios.TxSubmission
 
   @doc """
   Starts a new State Query process linked to the current process.

@@ -15,7 +15,13 @@ defmodule Xogmios.TxSubmission.Server do
     {:ok, state}
   end
 
-  defp handle_message(_message, state) do
+  defp handle_message(%{"error" => %{"message" => message}}, state) do
+    GenServer.reply(state.caller, {:error, message})
+    {:ok, state}
+  end
+
+  defp handle_message(message, state) do
+    Logger.info("Unhandled message: #{inspect(message)}")
     {:ok, state}
   end
 

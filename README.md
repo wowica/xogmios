@@ -13,8 +13,8 @@ Mini-Protocols supported by this library:
 
 - [x] Chain Synchronization
 - [x] State Query (partially supported)
+- [x] Tx Submission
 - [ ] Mempool Monitoring
-- [ ] Tx Submission
 
 
 See [Examples](#examples) section below for information on how to use this library.
@@ -76,7 +76,7 @@ defmodule ChainSyncClient do
 end
 ```
 
-The following example implements the State Query behaviour and runs queries against the tip of the chain.
+The following example illustrates working with the State Query protocol runs queries against the tip of the chain.
 
 ```elixir
 defmodule StateQueryClient do
