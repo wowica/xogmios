@@ -23,7 +23,9 @@ defmodule Xogmios do
   alias Xogmios.StateQuery
 
   @doc """
-  Starts a new State Query process linked to the current process
+  Starts a new State Query process linked to the current process.
+
+  `opts` are be passed to the underlying GenServer.
   """
   def start_state_link(client, opts) do
     StateQuery.start_link(client, opts)
@@ -78,6 +80,11 @@ defmodule Xogmios do
     ChainSync.start_link(client, opts)
   end
 
+  @doc """
+  Starts a new Tx Submission process linked to the current process.
+
+  `opts` are be passed to the underlying GenServer.
+  """
   def start_tx_submission_link(client, opts) do
     TxSubmission.start_link(client, opts)
   end
