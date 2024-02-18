@@ -18,6 +18,7 @@ defmodule Xogmios do
       end
   """
 
+  alias Xogmios.TxSubmission
   alias Xogmios.ChainSync
   alias Xogmios.StateQuery
 
@@ -77,6 +78,10 @@ defmodule Xogmios do
     ChainSync.start_link(client, opts)
   end
 
+  def start_tx_submission_link(client, opts) do
+    TxSubmission.start_link(client, opts)
+  end
+
   defmacro __using__(:state_query) do
     quote do
       use Xogmios.StateQuery
@@ -86,6 +91,12 @@ defmodule Xogmios do
   defmacro __using__(:chain_sync) do
     quote do
       use Xogmios.ChainSync
+    end
+  end
+
+  defmacro __using__(:tx_submission) do
+    quote do
+      use Xogmios.TxSubmission
     end
   end
 end
