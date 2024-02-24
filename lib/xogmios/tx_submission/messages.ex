@@ -25,6 +25,23 @@ defmodule Xogmios.TxSubmission.Messages do
     json
   end
 
+  def evaluate_tx(cbor) do
+    json = ~s"""
+    {
+      "jsonrpc": "2.0",
+      "method": "evaluateTransaction",
+      "params": {
+          "transaction": {
+            "cbor": "#{cbor}"
+          }
+      }
+    }
+    """
+
+    validate_json!(json)
+    json
+  end
+
   defp validate_json!(json) do
     case Jason.decode(json) do
       {:ok, _decoded} -> :ok

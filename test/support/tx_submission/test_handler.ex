@@ -15,15 +15,26 @@ defmodule TxSubmission.TestHandler do
     {:ok, state}
   end
 
+  @valid_cbor_value %{
+    "method" => "submitTransaction",
+    "params" => %{"transaction" => %{"cbor" => "valid-cbor-value"}}
+  }
+
+  @invalid_cbor_value %{
+    "method" => "submitTransaction",
+    "params" => %{"transaction" => %{"cbor" => "invalid-cbor-value"}}
+  }
+
+  @valid_tx_evaluation_cbor %{
+    "method" => "evaluateTransaction",
+    "params" => %{"transaction" => %{"cbor" => "valid-cbor-value"}}
+  }
+
   @impl true
   # Sends response back to client
   def websocket_handle({:text, payload}, state) do
     case Jason.decode(payload) do
-      {:ok,
-       %{
-         "method" => "submitTransaction",
-         "params" => %{"transaction" => %{"cbor" => "valid-cbor-value"}}
-       }} ->
+      {:ok, @valid_cbor_value} ->
         payload =
           Jason.encode!(%{
             "method" => "submitTransaction",
@@ -36,11 +47,7 @@ defmodule TxSubmission.TestHandler do
 
         {:reply, {:text, payload}, state}
 
-      {:ok,
-       %{
-         "method" => "submitTransaction",
-         "params" => %{"transaction" => %{"cbor" => "invalid-cbor-value"}}
-       }} ->
+      {:ok, @invalid_cbor_value} ->
         # Actual error returned from a malformed CBOR
         payload =
           Jason.encode!(%{
@@ -66,6 +73,20 @@ defmodule TxSubmission.TestHandler do
             "id" => nil,
             "jsonrpc" => "2.0",
             "method" => "submitTransaction"
+          })
+
+        {:reply, {:text, payload}, state}
+
+      {:ok, @valid_tx_evaluation_cbor} ->
+        payload =
+          Jason.encode!(%{
+            "method" => "evaluateTransaction",
+            "result" => [
+              %{
+                "budget" => %{"cpu" => 18_563_120, "memory" => 54_404},
+                "validator" => %{"index" => 0, "purpose" => "spend"}
+              }
+            ]
           })
 
         {:reply, {:text, payload}, state}
