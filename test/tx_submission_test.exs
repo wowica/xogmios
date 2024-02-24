@@ -24,6 +24,10 @@ defmodule Xogmios.TxSubmissionTest do
     def submit_tx(pid \\ __MODULE__, cbor) do
       TxSubmission.submit_tx(pid, cbor)
     end
+
+    def evaluate_tx(pid \\ __MODULE__, cbor) do
+      TxSubmission.evaluate_tx(pid, cbor)
+    end
   end
 
   test "transaction submission" do
@@ -38,5 +42,14 @@ defmodule Xogmios.TxSubmissionTest do
              DummyClient.submit_tx(_cbor = "invalid-cbor-value")
 
     assert reason =~ "Invalid transaction"
+  end
+
+  test "transaction evaluation" do
+    pid = start_supervised!({DummyClient, url: @ws_url})
+    assert is_pid(pid)
+    Process.sleep(1_000)
+
+    assert {:ok, [%{"budget" => _budget, "validator" => _validator}]} =
+             DummyClient.evaluate_tx(_cbor = "valid-cbor-value")
   end
 end
