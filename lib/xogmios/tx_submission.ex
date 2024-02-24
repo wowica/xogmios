@@ -7,7 +7,7 @@ defmodule Xogmios.TxSubmission do
   alias Xogmios.TxSubmission.Response
   alias Xogmios.TxSubmission.Server
 
-  @tx_submit_timeout 2_000
+  @request_timeout 2_000
 
   @doc """
   Starts a new Tx Submission process linked to the current process.
@@ -59,7 +59,7 @@ defmodule Xogmios.TxSubmission do
 
   defp call(client, message) do
     try do
-      case GenServer.call(client, {:send, message}, @tx_submit_timeout) do
+      case GenServer.call(client, {:send, message}, @request_timeout) do
         {:ok, response} -> {:ok, response}
         {:error, reason} -> {:error, reason}
       end
