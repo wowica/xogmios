@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Support for Tx Submission
-- Support for Tx Evaluation
+## [v0.2.0](https://github.com/wowica/xogmios/releases/tag/v0.2.0) (2024-02-24)
+
+## Added
+
+- Support for Tx Submission procotol
+    - Submit signed transactions
+    - Evaluate execution units of given transaction
 
 ## [v0.1.0](https://github.com/wowica/xogmios/releases/tag/v0.1.0) (2024-02-13)
 
