@@ -53,7 +53,7 @@ defmodule Xogmios.StateQuery.Messages do
     json
   end
 
-  def validate_json!(json) do
+  defp validate_json!(json) do
     case Jason.decode(json) do
       {:ok, _decoded} -> :ok
       {:error, %DecodeError{} = error} -> raise "Invalid JSON: #{inspect(error)}"

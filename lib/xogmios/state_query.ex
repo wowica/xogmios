@@ -46,7 +46,6 @@ defmodule Xogmios.StateQuery do
           Messages.build_message(name)
       end
 
-    Messages.validate_json!(query_message)
     {:ok, query_message}
   end
 
