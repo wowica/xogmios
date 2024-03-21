@@ -41,14 +41,11 @@ defmodule Xogmios.StateQuery.Messages do
     json
   end
 
-  @doc """
-  Query current epoch
-  """
-  def get_current_epoch do
-    json = ~S"""
+  def build_message(scope \\ "queryLedgerState", name) do
+    json = ~s"""
     {
       "jsonrpc": "2.0",
-      "method": "queryLedgerState/epoch"
+      "method": "#{scope}/#{name}"
     }
     """
 
@@ -56,22 +53,7 @@ defmodule Xogmios.StateQuery.Messages do
     json
   end
 
-  @doc """
-  Query start of the current era
-  """
-  def get_era_start do
-    json = ~S"""
-    {
-      "jsonrpc": "2.0",
-      "method": "queryLedgerState/eraStart"
-    }
-    """
-
-    validate_json!(json)
-    json
-  end
-
-  defp validate_json!(json) do
+  def validate_json!(json) do
     case Jason.decode(json) do
       {:ok, _decoded} -> :ok
       {:error, %DecodeError{} = error} -> raise "Invalid JSON: #{inspect(error)}"

@@ -17,13 +17,6 @@ defmodule Xogmios.StateQuery do
     GenServer.start_link(client, opts, name: client)
   end
 
-  @query_messages %{
-    get_current_epoch: Messages.get_current_epoch(),
-    get_era_start: Messages.get_era_start()
-  }
-
-  @allowed_queries Map.keys(@query_messages)
-
   @doc """
   Sends a State Query call to the server and returns a response.
 
@@ -31,22 +24,31 @@ defmodule Xogmios.StateQuery do
 
   1. (Optional) A process reference. If none given, it defaults to the linked process `__MODULE__`.
   2. The query to run. Support for [all available queries](https://ogmios.dev/mini-protocols/local-state-query/#network)
-  is actively being worked on. For the time being, it only accepts the following values: #{@allowed_queries |> Enum.map_join(",", fn query -> "`#{inspect(query)}`" end)}
 
   """
   @spec send_query(pid() | atom(), atom()) :: {:ok, any()} | {:error, any()}
-  def send_query(client \\ __MODULE__, query) do
-    with {:ok, message} <- fetch_query_message(query),
+  def send_query(client \\ __MODULE__, query_name) do
+    with {:ok, message} <- build_query_message(query_name),
          {:ok, %Response{} = response} <- call_query(client, message) do
       {:ok, response.result}
     end
   end
 
-  defp fetch_query_message(query) when query in @allowed_queries,
-    do: Map.fetch(@query_messages, query)
+  @valid_scopes ["queryNetwork", "queryLedgerState"]
 
-  defp fetch_query_message(query),
-    do: {:error, "Unsupported query #{inspect(query)}"}
+  defp build_query_message(query_name) do
+    query_message =
+      case String.split(query_name, "/") do
+        [scope, name] when scope in @valid_scopes ->
+          Messages.build_message(scope, name)
+
+        [name] ->
+          Messages.build_message(name)
+      end
+
+    Messages.validate_json!(query_message)
+    {:ok, query_message}
+  end
 
   defp call_query(client, message) do
     case GenServer.call(client, {:send_message, message}) do

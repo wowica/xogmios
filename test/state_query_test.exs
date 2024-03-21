@@ -22,11 +22,7 @@ defmodule Xogmios.StateQueryTest do
     end
 
     def get_current_epoch(pid \\ __MODULE__) do
-      StateQuery.send_query(pid, :get_current_epoch)
-    end
-
-    def unsupported_query(pid \\ __MODULE__) do
-      StateQuery.send_query(pid, :unsupported_query)
+      StateQuery.send_query(pid, "epoch")
     end
   end
 
@@ -36,7 +32,5 @@ defmodule Xogmios.StateQueryTest do
     Process.sleep(1_000)
     expected_epoch = 333
     assert {:ok, ^expected_epoch} = DummyClient.get_current_epoch()
-    assert {:error, error_message} = DummyClient.unsupported_query()
-    assert error_message == "Unsupported query :unsupported_query"
   end
 end
