@@ -26,7 +26,7 @@ defmodule Xogmios.StateQuery do
   2. The query to run. Support for [all available queries](https://ogmios.dev/mini-protocols/local-state-query/#network)
 
   """
-  @spec send_query(pid() | atom(), atom()) :: {:ok, any()} | {:error, any()}
+  @spec send_query(pid() | atom(), String.t()) :: {:ok, any()} | {:error, any()}
   def send_query(client \\ __MODULE__, query_name) do
     with {:ok, message} <- build_query_message(query_name),
          {:ok, %Response{} = response} <- call_query(client, message) do
