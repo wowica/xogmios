@@ -23,12 +23,24 @@ defmodule Xogmios.StateQuery do
   This function is synchronous and takes two arguments:
 
   1. (Optional) A process reference. If none given, it defaults to the linked process `__MODULE__`.
-  2. The query to run. Support for [all available queries](https://ogmios.dev/mini-protocols/local-state-query/#network)
+  2. The name of the query to run.
+  3. (Optional) Parameters to the query.
 
+  Support for [all Ledger-state](https://ogmios.dev/mini-protocols/local-state-query/#ledger-state)
+  and [network](https://ogmios.dev/mini-protocols/local-state-query/#network) queries.
+
+  For Ledger-state queries, only the name of the query is needed. For example:
+
+  `StateQuery.send_query(pid, "epoch")` will send the query for ""queryLedgerState/epoch".
+
+  For Network queries, the prefix "queryNetwork/" is needed. For example:
+
+  `StateQueryClient.send_query("queryNetwork/blockHeight")` will send the query for "queryNetwork/blockHeight"
   """
-  @spec send_query(pid() | atom(), String.t()) :: {:ok, any()} | {:error, any()}
-  def send_query(client \\ __MODULE__, query_name) do
-    with {:ok, message} <- build_query_message(query_name),
+  @spec send_query(pid() | atom(), String.t(), map()) :: {:ok, any()} | {:error, any()}
+
+  def send_query(client, query, params \\ %{}) do
+    with {:ok, message} <- build_query_message(query, params),
          {:ok, %Response{} = response} <- call_query(client, message) do
       {:ok, response.result}
     end
@@ -36,14 +48,14 @@ defmodule Xogmios.StateQuery do
 
   @valid_scopes ["queryNetwork", "queryLedgerState"]
 
-  defp build_query_message(query_name) do
+  defp build_query_message(query_name, query_params) do
     query_message =
       case String.split(query_name, "/") do
         [scope, name] when scope in @valid_scopes ->
-          Messages.build_message(scope, name)
+          Messages.build_message(scope, name, query_params)
 
         [name] ->
-          Messages.build_message(name)
+          Messages.build_message("queryLedgerState", name, query_params)
       end
 
     {:ok, query_message}
@@ -65,10 +77,20 @@ defmodule Xogmios.StateQuery do
       @impl true
       def init(args) do
         url = Keyword.fetch!(args, :url)
+        initial_state = [notify_on_connect: self()]
 
-        case :websocket_client.start_link(url, Server, []) do
+        case :websocket_client.start_link(url, Server, initial_state) do
           {:ok, ws_pid} ->
-            {:ok, %{ws_pid: ws_pid, response: nil, caller: nil}}
+            # Blocks until the connection with the Ogmios server
+            # is established or until timeout is reached.
+            receive do
+              {:connected, _connection} ->
+                {:ok, %{ws_pid: ws_pid, response: nil, caller: nil}}
+            after
+              _timeout = 5_000 ->
+                send(ws_pid, :close)
+                {:error, :connection_timeout}
+            end
 
           {:error, _} = error ->
             error

@@ -13,8 +13,8 @@ defmodule StateQueryClient do
 
   Then invoke functions:
    * StateQueryClient.get_current_epoch()
-   * StateQueryClient.get_era_start()
-   * StateQueryClient.get_bananas() # Returns error message
+   * StateQueryClient.send_query("eraStart")
+   * StateQueryClient.send_query("queryNetwork/blockHeight")
 
   Not all queries are supported yet.
   """
@@ -27,10 +27,10 @@ defmodule StateQueryClient do
   end
 
   def get_current_epoch(pid \\ __MODULE__) do
-    StateQuery.send_query(pid, :get_current_epoch)
+    StateQuery.send_query(pid, "epoch")
   end
 
-  def get_era_start(pid \\ __MODULE__) do
-    StateQuery.send_query(pid, :get_era_start)
+  def send_query(pid \\ __MODULE__, query_name) do
+    StateQuery.send_query(pid, query_name)
   end
 end

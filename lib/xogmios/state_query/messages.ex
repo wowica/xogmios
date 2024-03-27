@@ -6,46 +6,37 @@ defmodule Xogmios.StateQuery.Messages do
   alias Jason.DecodeError
 
   @doc """
-  Returns point to be used by `acquire_ledger_state/1`
+  Builds a message for a given scope, method and parameters.
+
+  * The scope can be either `"networkQuery"` or `"queryLedgerState"`.
+  * The method can be any of the supported methods from [Network](https://ogmios.dev/mini-protocols/local-state-query/#network) or
+  [Ledger-state](https://ogmios.dev/mini-protocols/local-state-query/#ledger-state) scopes.
+  * Parameters are optional, according to the method in question.
   """
-  def get_tip do
-    json = ~S"""
-    {
-      "jsonrpc": "2.0",
-      "method": "queryNetwork/tip"
-    }
-    """
+  @spec build_message(String.t(), String.t(), map()) :: String.t()
 
-    validate_json!(json)
-    json
-  end
-
-  @doc """
-  Acquires ledger state to be used by subsequent queries
-  """
-  def acquire_ledger_state(%{"slot" => slot, "id" => id} = _point) do
-    json = ~s"""
-    {
-      "jsonrpc": "2.0",
-      "method": "acquireLedgerState",
-      "params": {
-          "point": {
-              "slot": #{slot},
-              "id": "#{id}"
-          }
-      }
-    }
-    """
-
-    validate_json!(json)
-    json
-  end
-
-  def build_message(scope \\ "queryLedgerState", name) do
+  # Builds a message for a method with no parameters
+  def build_message(scope, name, %{} = _no_params) do
     json = ~s"""
     {
       "jsonrpc": "2.0",
       "method": "#{scope}/#{name}"
+    }
+    """
+
+    validate_json!(json)
+    json
+  end
+
+  # Builds a message for a method with parameters
+  def build_message(scope, name, params) do
+    params = Jason.encode!(params)
+
+    json = ~s"""
+    {
+      "jsonrpc": "2.0",
+      "method": "#{scope}/#{name}",
+      "params": #{params}
     }
     """
 
