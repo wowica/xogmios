@@ -15,8 +15,6 @@ defmodule StateQueryClient do
    * StateQueryClient.get_current_epoch()
    * StateQueryClient.send_query("eraStart")
    * StateQueryClient.send_query("queryNetwork/blockHeight")
-
-  Not all queries are supported yet.
   """
 
   use Xogmios, :state_query

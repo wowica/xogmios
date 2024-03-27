@@ -26,8 +26,8 @@ defmodule Xogmios.StateQuery do
   2. The name of the query to run.
   3. (Optional) Parameters to the query.
 
-  Support for [all Ledger-state](https://ogmios.dev/mini-protocols/local-state-query/#ledger-state)
-  and [network](https://ogmios.dev/mini-protocols/local-state-query/#network) queries.
+  Support for all [Ledger-state](https://ogmios.dev/mini-protocols/local-state-query/#ledger-state)
+  and [Network](https://ogmios.dev/mini-protocols/local-state-query/#network) queries.
 
   For Ledger-state queries, only the name of the query is needed. For example:
 
