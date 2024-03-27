@@ -8,7 +8,6 @@ defmodule Xogmios.StateQuery.Server do
 
   require Logger
 
-  alias Xogmios.StateQuery.Messages
   alias Xogmios.StateQuery.Response
 
   defp handle_message(
