@@ -16,7 +16,7 @@ defmodule Xogmios.StateQuery.Messages do
   @spec build_message(String.t(), String.t(), map()) :: String.t()
 
   # Builds a message for a method with no parameters
-  def build_message(scope, name, no_params) when no_params == %{} do
+  def build_message(scope, name, no_params) when map_size(no_params) == 0 do
     json = ~s"""
     {
       "jsonrpc": "2.0",
