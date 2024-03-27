@@ -5,17 +5,16 @@
 
 [Docs](https://hexdocs.pm/xogmios/)
 
-An Elixir client for [Ogmios](https://github.com/CardanoSolutions/ogmios).  
+An Elixir client for [Ogmios](https://github.com/CardanoSolutions/ogmios).
 
 > Ogmios is a lightweight bridge interface for a Cardano node. It offers a WebSockets API that enables local clients to speak Ouroboros' mini-protocols via JSON/RPC. - https://ogmios.dev/
 
 Mini-Protocols supported by this library:
 
 - [x] Chain Synchronization
-- [x] State Query (partially supported)
+- [x] State Query
 - [x] Tx Submission
 - [ ] Mempool Monitoring
-
 
 See [Examples](#examples) section below for information on how to use this library.
 
@@ -92,11 +91,11 @@ defmodule StateQueryClient do
   end
 
   def get_current_epoch(pid \\ __MODULE__) do
-    StateQuery.send_query(pid, :get_current_epoch)
+    StateQuery.send_query(pid, "epoch")
   end
 
-  def get_era_start(pid \\ __MODULE__) do
-    StateQuery.send_query(pid, :get_era_start)
+  def send_query(pid \\ __MODULE__, query_name) do
+    StateQuery.send_query(pid, query_name)
   end
 end
 ```
@@ -127,4 +126,3 @@ For examples of applications using this library, see [Blocks](https://github.com
 ## Test
 
 Run `mix test`. Tests do NOT rely on a running Ogmios instance.
-

@@ -22,21 +22,25 @@ defmodule Xogmios.StateQueryTest do
     end
 
     def get_current_epoch(pid \\ __MODULE__) do
-      StateQuery.send_query(pid, :get_current_epoch)
+      StateQuery.send_query(pid, "epoch")
     end
 
-    def unsupported_query(pid \\ __MODULE__) do
-      StateQuery.send_query(pid, :unsupported_query)
+    def get_utxos_by_address(pid \\ __MODULE__) do
+      params = %{
+        addresses: ["addr_test1vp7yrmz5p6mdm3ph0a0jaxtk58hny3wseuw80fwql93huygczalde"]
+      }
+
+      StateQuery.send_query(pid, "utxo", params)
     end
   end
 
   test "returns current epoch" do
+    # See test/support/state_query/test_handler.ex for fixture values
     pid = start_supervised!({DummyClient, url: @ws_url})
     assert is_pid(pid)
     Process.sleep(1_000)
     expected_epoch = 333
     assert {:ok, ^expected_epoch} = DummyClient.get_current_epoch()
-    assert {:error, error_message} = DummyClient.unsupported_query()
-    assert error_message == "Unsupported query :unsupported_query"
+    assert {:ok, [_utxo1, _utxo2]} = DummyClient.get_utxos_by_address()
   end
 end
