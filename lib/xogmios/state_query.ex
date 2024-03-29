@@ -29,13 +29,32 @@ defmodule Xogmios.StateQuery do
   Support for all [Ledger-state](https://ogmios.dev/mini-protocols/local-state-query/#ledger-state)
   and [Network](https://ogmios.dev/mini-protocols/local-state-query/#network) queries.
 
-  For Ledger-state queries, only the name of the query is needed. For example:
+  For Ledger-state queries, only the name of the query is needed. For example, the following
+  function call
 
-  `StateQuery.send_query(pid, "epoch")` will send the query for ""queryLedgerState/epoch".
+  ```
+  StateQuery.send_query(pid, "epoch")
+  ```
+
+  is the same as calling
+
+  ```
+  StateQuery.send_query(pid, "queryLedgerState/epoch")
+  ```
 
   For Network queries, the prefix "queryNetwork/" is needed. For example:
 
-  `StateQueryClient.send_query("queryNetwork/blockHeight")` will send the query for "queryNetwork/blockHeight"
+  ```
+  StateQuery.send_query(pid, "queryNetwork/blockHeight")
+  ```
+
+  Optional parameters are passed as the third argument:
+
+  ```
+  query_name = "utxo"
+  query_params = %{addresses: [address_1, address_2]}
+  StateQuery.send_query(pid, query_name, query_params)
+  ```
   """
   @spec send_query(pid() | atom(), String.t(), map()) :: {:ok, any()} | {:error, any()}
 
