@@ -25,19 +25,22 @@ Add the dependency to `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:xogmios, "~> 0.2.0"}
+    {:xogmios, "~> 0.3.0"}
   ]
 end
 ```
 
-Add your client module(s) to your application's supervision tree as such:
+Add your client modules to your application's supervision tree as such:
 
 ```elixir
 # file: application.ex
 def start(_type, _args) do
+  ogmios_url = System.fetch_env!("OGMIOS_URL")
+
   children = [
-    {ChainSyncClient, url: "ws://..."},
-    {StateQueryClient, url: "ws://..."},
+    {ChainSyncClient, url: ogmios_url},
+    {StateQueryClient, url: ogmios_url},
+    {TxSubmissionClient, url: ogmios_url}
   ]
   #...
 end
@@ -51,7 +54,7 @@ See section below for examples of client modules.
 
 ### Chain Sync
 
-The following is an example of a module that implement the **Chain Sync** behaviour. This module syncs with the tip of the chain, reads the next 3 blocks and then closes the connection with the server.
+The following is an example of a module that implement the **Chain Sync** behaviour. In this example, the client syncs with the tip of the chain, reads the next 3 blocks and then closes the connection with the server.
 
 ```elixir
 defmodule ChainSyncClient do
@@ -91,11 +94,25 @@ defmodule StateQueryClient do
   end
 
   def get_current_epoch(pid \\ __MODULE__) do
+    # Defaults to Ledger-state queries.
+    # The following call is the same as calling
+    # `StateQuery.send_query(pid, "queryLedgerState/epoch")`
     StateQuery.send_query(pid, "epoch")
   end
 
-  def send_query(pid \\ __MODULE__, query_name) do
+  def get_network_height(pid \\ __MODULE__) do
+    # For network queries, scope must be explicitly used.
+    StateQuery.send_query(pid, "queryNetwork/blockHeight")`
+  end
+
+  def send_query_no_params(pid \\ __MODULE__, query_name) do
     StateQuery.send_query(pid, query_name)
+  end
+
+  def send_query(pid \\ __MODULE__, query_name, query_params) do
+    # Optional query params are sent as the third argument
+    # to StateQuery.send_query/3
+    StateQuery.send_query(pid, query_name, query_params)
   end
 end
 ```
