@@ -8,24 +8,7 @@ defmodule Xogmios.StateQuery.Server do
 
   require Logger
 
-  alias Xogmios.StateQuery.Messages
   alias Xogmios.StateQuery.Response
-
-  defp handle_message(
-         %{"method" => "queryNetwork/tip"} = message,
-         state
-       ) do
-    point = message["result"]
-    message = Messages.acquire_ledger_state(point)
-    {:reply, {:text, message}, state}
-  end
-
-  defp handle_message(
-         %{"method" => "acquireLedgerState"} = _message,
-         state
-       ) do
-    {:ok, state}
-  end
 
   defp handle_message(
          %{"method" => _method, "result" => result},
@@ -40,14 +23,17 @@ defmodule Xogmios.StateQuery.Server do
   end
 
   @impl true
-  def init(_args) do
-    {:once, %{caller: nil}}
+  def init(args) do
+    # websocket_client.init/1 behaviour expects keyword list as argument
+    # but maps are easier to work with downstream.
+    initial_state = args |> Keyword.merge(caller: nil) |> Enum.into(%{})
+
+    {:once, initial_state}
   end
 
   @impl true
-  def onconnect(_arg0, state) do
-    start_message = Xogmios.StateQuery.Messages.get_tip()
-    :websocket_client.cast(self(), {:text, start_message})
+  def onconnect(connection, state) do
+    send(state.notify_on_connect, {:connected, connection})
     {:ok, state}
   end
 

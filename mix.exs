@@ -1,6 +1,7 @@
 defmodule Xogmios.MixProject do
   use Mix.Project
 
+  @description "An Elixir client for Ogmios"
   @source_url "https://github.com/wowica/xogmios"
   @version "0.2.0"
 
@@ -22,6 +23,7 @@ defmodule Xogmios.MixProject do
           StateQueryClient
         ]
       ],
+      description: @description,
       package: package(),
       docs: docs()
     ]
@@ -54,7 +56,7 @@ defmodule Xogmios.MixProject do
 
   defp package do
     [
-      description: "An Elixir client for Ogmios",
+      description: @description,
       licenses: ["Apache-2.0"],
       maintainers: ["Carlos Souza"],
       links: %{"GitHub" => @source_url}

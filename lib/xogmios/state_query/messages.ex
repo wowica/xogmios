@@ -6,34 +6,21 @@ defmodule Xogmios.StateQuery.Messages do
   alias Jason.DecodeError
 
   @doc """
-  Returns point to be used by `acquire_ledger_state/1`
-  """
-  def get_tip do
-    json = ~S"""
-    {
-      "jsonrpc": "2.0",
-      "method": "queryNetwork/tip"
-    }
-    """
+  Builds a message for a given scope, method and parameters.
 
-    validate_json!(json)
-    json
-  end
-
-  @doc """
-  Acquires ledger state to be used by subsequent queries
+  * The scope can be either `"networkQuery"` or `"queryLedgerState"`.
+  * The method can be any of the supported methods from [Network](https://ogmios.dev/mini-protocols/local-state-query/#network) or
+  [Ledger-state](https://ogmios.dev/mini-protocols/local-state-query/#ledger-state) scopes.
+  * Parameters are optional, according to the method in question.
   """
-  def acquire_ledger_state(%{"slot" => slot, "id" => id} = _point) do
+  @spec build_message(String.t(), String.t(), map()) :: String.t()
+
+  # Builds a message for a method with no parameters
+  def build_message(scope, name, no_params) when map_size(no_params) == 0 do
     json = ~s"""
     {
       "jsonrpc": "2.0",
-      "method": "acquireLedgerState",
-      "params": {
-          "point": {
-              "slot": #{slot},
-              "id": "#{id}"
-          }
-      }
+      "method": "#{scope}/#{name}"
     }
     """
 
@@ -41,29 +28,15 @@ defmodule Xogmios.StateQuery.Messages do
     json
   end
 
-  @doc """
-  Query current epoch
-  """
-  def get_current_epoch do
-    json = ~S"""
+  # Builds a message for a method with parameters
+  def build_message(scope, name, params) do
+    params = Jason.encode!(params)
+
+    json = ~s"""
     {
       "jsonrpc": "2.0",
-      "method": "queryLedgerState/epoch"
-    }
-    """
-
-    validate_json!(json)
-    json
-  end
-
-  @doc """
-  Query start of the current era
-  """
-  def get_era_start do
-    json = ~S"""
-    {
-      "jsonrpc": "2.0",
-      "method": "queryLedgerState/eraStart"
+      "method": "#{scope}/#{name}",
+      "params": #{params}
     }
     """
 
