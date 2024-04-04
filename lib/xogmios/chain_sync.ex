@@ -10,7 +10,8 @@ defmodule Xogmios.ChainSync do
 
   Returning `{:ok, :next_block, new_state}` will request the next block once it's made available.
 
-  Returning `{:ok, new_state}` will not request anymore blocks.
+  Returning `{:ok, new_state}` will not request anymore blocks. Typically used in conjunction with `find_next_block/1`
+  when syncing from a particular point in the history of the chain.
 
   Returning `{:ok, :close, new_state}` will close the connection to the server.
   """
@@ -55,6 +56,22 @@ defmodule Xogmios.ChainSync do
     :websocket_client.start_link({:local, client}, url, client, initial_state,
       keepalive: @keepalive_in_ms
     )
+  end
+
+  @doc """
+  Issues a message for finding the next block.
+
+  This function should be used when manually syncing from a particular point in the history of the chain.
+
+  The result of calling this method must be handled by the `c:handle_block/2` callback
+  """
+  @spec find_next_block(pid()) :: :ok
+  def find_next_block(pid) do
+    # hacky af but it does the job for now
+    state = :sys.get_state(pid)
+    {_c, %{ws_pid: ws_pid}} = state |> elem(1) |> elem(5)
+    next_block_message = Xogmios.ChainSync.Messages.next_block()
+    :websocket_client.cast(ws_pid, {:text, next_block_message})
   end
 
   defmacro __using__(_opts) do
