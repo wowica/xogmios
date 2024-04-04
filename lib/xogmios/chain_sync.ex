@@ -8,10 +8,12 @@ defmodule Xogmios.ChainSync do
   @doc """
   Invoked when a new block is emitted. This callback is required.
 
-  Returning `{:ok, :next_block, new_state}` will request the next block once it's made available.
+  Returning `{:ok, :next_block, new_state}` will request the next block once
+  it's made available.
 
-  Returning `{:ok, new_state}` will not request anymore blocks. Typically used in conjunction with `find_next_block/1`
-  when syncing from a particular point in the history of the chain.
+  Returning `{:ok, new_state}` will not request anymore blocks. Typically used
+  in conjunction with `find_next_block/1` when syncing from a particular point
+  in the history of the chain.
 
   Returning `{:ok, :close, new_state}` will close the connection to the server.
   """
