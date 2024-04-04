@@ -63,9 +63,11 @@ defmodule Xogmios.ChainSync do
   @doc """
   Issues a message for finding the next block.
 
-  This function should be used when manually syncing from a particular point in the history of the chain.
+  This function should be used when manually syncing from a particular point in
+  the history of the chain.
 
-  The result of calling this method must be handled by the `c:handle_block/2` callback
+  The result of calling this method must be handled by the `c:handle_block/2`
+  callback
   """
   @spec find_next_block(pid()) :: :ok
   def find_next_block(pid) do
