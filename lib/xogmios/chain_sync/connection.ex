@@ -6,8 +6,6 @@ defmodule Xogmios.ChainSync.Connection do
 
   alias Xogmios.ChainSync.Messages
 
-  require Logger
-
   defmacro __using__(_opts) do
     quote do
       @behaviour :websocket_client

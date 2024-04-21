@@ -72,10 +72,31 @@ defmodule Xogmios.ChainSync do
   @spec find_next_block(pid()) :: :ok
   def find_next_block(pid) do
     # hacky af but it does the job for now
+
     state = :sys.get_state(pid)
+
     {_c, %{ws_pid: ws_pid}} = state |> elem(1) |> elem(5)
+
+    caller = self()
+
+    :sys.replace_state(pid, fn current_state ->
+      {:connected, {:context, req, transport, empty_list, ws, {module, client_info}, _, _, _}} =
+        current_state
+
+      updated_client_info = Map.put(client_info, :caller, caller)
+
+      {:connected,
+       {:context, req, transport, empty_list, ws, {module, updated_client_info}, "", true, 0}}
+    end)
+
     next_block_message = Xogmios.ChainSync.Messages.next_block()
     :websocket_client.cast(ws_pid, {:text, next_block_message})
+
+    receive do
+      {:ok, next_block} -> {:ok, next_block}
+    after
+      5_000 -> :error
+    end
   end
 
   defmacro __using__(_opts) do
@@ -135,19 +156,25 @@ defmodule Xogmios.ChainSync do
             %{"method" => "nextBlock", "result" => %{"direction" => "forward"} = result},
             state
           ) do
-        case state.handler.handle_block(result["block"], state) do
-          {:ok, :next_block, new_state} ->
-            message = Messages.next_block()
-            {:reply, {:text, message}, new_state}
+        if caller = Map.get(state, :caller) do
+          # Returns to sync caller
+          send(caller, {:ok, result["block"]})
+          {:ok, state}
+        else
+          case state.handler.handle_block(result["block"], state) do
+            {:ok, :next_block, new_state} ->
+              message = Messages.next_block()
+              {:reply, {:text, message}, new_state}
 
-          {:ok, new_state} ->
-            {:ok, new_state}
+            {:ok, new_state} ->
+              {:ok, new_state}
 
-          {:close, new_state} ->
-            {:close, "finished", new_state}
+            {:close, new_state} ->
+              {:close, "finished", new_state}
 
-          response ->
-            Logger.warning("Invalid response #{inspect(response)}")
+            response ->
+              Logger.warning("Invalid response #{inspect(response)}")
+          end
         end
       end
 
