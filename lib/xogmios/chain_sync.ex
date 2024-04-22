@@ -5,6 +5,8 @@ defmodule Xogmios.ChainSync do
 
   alias Xogmios.ChainSync.Messages
 
+  require Logger
+
   @doc """
   Invoked when a new block is emitted. This callback is required.
 
@@ -53,11 +55,30 @@ defmodule Xogmios.ChainSync do
   @spec start_link(module(), start_options :: Keyword.t()) :: {:ok, pid()} | {:error, term()}
   def start_link(client, opts) do
     {url, opts} = Keyword.pop(opts, :url)
-    initial_state = Keyword.merge(opts, handler: client)
+    initial_state = Keyword.merge(opts, handler: client, notify_on_connect: self())
 
-    :websocket_client.start_link({:local, client}, url, client, initial_state,
-      keepalive: @keepalive_in_ms
-    )
+    ws_link =
+      :websocket_client.start_link({:local, client}, url, client, initial_state,
+        keepalive: @keepalive_in_ms
+      )
+
+    case ws_link do
+      {:ok, ws_pid} ->
+        # Blocks until the connection with the Ogmios server
+        # is established or until timeout is reached.
+        receive do
+          {:connected, _connection} -> ws_link
+        after
+          _timeout = 5_000 ->
+            Logger.warning("Timeout connecting to Ogmios server")
+            send(ws_pid, :close)
+            {:error, :connection_timeout}
+        end
+
+      {:error, _} = error ->
+        Logger.warning("Error connecting with Ogmios server")
+        error
+    end
   end
 
   @doc """
