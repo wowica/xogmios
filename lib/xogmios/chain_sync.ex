@@ -90,7 +90,7 @@ defmodule Xogmios.ChainSync do
   The result of calling this method must be handled by the `c:handle_block/2`
   callback
   """
-  @spec find_next_block(pid()) :: :ok
+  @spec find_next_block(pid()) :: {:ok, block :: map()} | :error
   def find_next_block(pid) do
     # hacky af but it does the job for now
 
