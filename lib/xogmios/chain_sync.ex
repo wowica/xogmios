@@ -47,6 +47,9 @@ defmodule Xogmios.ChainSync do
   # This is important because proxies might close idle connections after a few seconds.
   @keepalive_in_ms 5_000
 
+  # The websocket client library
+  @client :websocket_client
+
   @doc """
   Starts a new Chain Sync process linked to the current process.
 
@@ -55,41 +58,53 @@ defmodule Xogmios.ChainSync do
   @spec start_link(module(), start_options :: Keyword.t()) :: {:ok, pid()} | {:error, term()}
   def start_link(client, opts) do
     {url, opts} = Keyword.pop(opts, :url)
+    {name, opts} = Keyword.pop(opts, :name, client)
     initial_state = Keyword.merge(opts, handler: client, notify_on_connect: self())
 
-    # TODO: refactor this whole thing
-    process_name =
-      if name_as_atom_via_tuple = Keyword.get(opts, :name) do
-        # TODO: ensure name is atom
-        # support multiple formats:
-        # a) {:local, name_as_atom}
-        # b) {:via, R, term()}
-        name_as_atom_via_tuple
-      else
-        {:local, client}
+    with {:ok, process_name} <- build_process_name(name),
+         {:ok, ws_pid} <- start_link(process_name, url, client, initial_state) do
+      # Blocks until the connection with the Ogmios server
+      # is established or until timeout is reached.
+      receive do
+        {:connected, _connection} -> {:ok, ws_pid}
+      after
+        _timeout = 5_000 ->
+          Logger.warning("Timeout connecting to Ogmios server")
+          send(ws_pid, :close)
+          {:error, :connection_timeout}
       end
-
-    ws_link =
-      :websocket_client.start_link(process_name, url, client, initial_state,
-        keepalive: @keepalive_in_ms
-      )
-
-    case ws_link do
-      {:ok, ws_pid} ->
-        # Blocks until the connection with the Ogmios server
-        # is established or until timeout is reached.
-        receive do
-          {:connected, _connection} -> ws_link
-        after
-          _timeout = 5_000 ->
-            Logger.warning("Timeout connecting to Ogmios server")
-            send(ws_pid, :close)
-            {:error, :connection_timeout}
-        end
+    else
+      {:error, :invalid_process_name} = error ->
+        error
 
       {:error, _} = error ->
-        Logger.warning("Error connecting with Ogmios server")
+        Logger.warning("Error connecting with Ogmios server #{inspect(error)}")
         error
+    end
+  end
+
+  defp start_link(name, url, client, state) do
+    @client.start_link(name, url, client, state, keepalive: @keepalive_in_ms)
+  end
+
+  # Builds process name from valid argument or returns error
+  @spec build_process_name(term() | {:global, term()} | {:via, term(), term()}) ::
+          {:ok, any()} | {:error, term()}
+  defp build_process_name(name) do
+    case name do
+      name when is_atom(name) ->
+        {:ok, {:local, name}}
+
+      {:global, name} when is_atom(name) ->
+        {:ok, {:global, name}}
+
+      {:via, registry, term} ->
+        {:ok, {:via, registry, term}}
+
+      _ ->
+        # Returns error if name does not comply with
+        # values accepted by the websocket client library
+        {:error, :invalid_process_name}
     end
   end
 
