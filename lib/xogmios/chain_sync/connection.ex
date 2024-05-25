@@ -17,7 +17,7 @@ defmodule Xogmios.ChainSync.Connection do
 
       def child_spec(opts) do
         %{
-          id: __MODULE__,
+          id: Keyword.get(opts, :id, __MODULE__),
           start: {__MODULE__, :start_link, [opts]},
           shutdown: 5_000,
           restart: Keyword.get(opts, :restart, :transient),

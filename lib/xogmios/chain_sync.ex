@@ -57,8 +57,20 @@ defmodule Xogmios.ChainSync do
     {url, opts} = Keyword.pop(opts, :url)
     initial_state = Keyword.merge(opts, handler: client, notify_on_connect: self())
 
+    # TODO: refactor this whole thing
+    process_name =
+      if name_as_atom_via_tuple = Keyword.get(opts, :name) do
+        # TODO: ensure name is atom
+        # support multiple formats:
+        # a) {:local, name_as_atom}
+        # b) {:via, R, term()}
+        name_as_atom_via_tuple
+      else
+        {:local, client}
+      end
+
     ws_link =
-      :websocket_client.start_link({:local, client}, url, client, initial_state,
+      :websocket_client.start_link(process_name, url, client, initial_state,
         keepalive: @keepalive_in_ms
       )
 
