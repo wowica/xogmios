@@ -105,6 +105,11 @@ defmodule Xogmios.ChainSyncTest do
     pid4 = start_supervised!({DummyClientWithName, opts4})
 
     assert is_pid(pid4)
-    # assert Process.info(pid4)[:registered_name] == :global_banana
+
+    global_pid4 = :global.whereis_name(:global_banana)
+
+    assert is_pid(global_pid4)
+
+    assert pid4 == global_pid4
   end
 end
