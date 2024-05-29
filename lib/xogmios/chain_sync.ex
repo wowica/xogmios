@@ -93,11 +93,11 @@ defmodule Xogmios.ChainSync do
       name when is_atom(name) ->
         {:ok, {:local, name}}
 
-      {:global, name} when is_atom(name) ->
-        {:ok, {:global, name}}
+      {:global, term} = tuple when is_atom(term) ->
+        {:ok, tuple}
 
-      {:via, registry, term} ->
-        {:ok, {:via, registry, term}}
+      {:via, registry, _term} = tuple when is_atom(registry) ->
+        {:ok, tuple}
 
       _ ->
         # Returns error if name does not comply with
