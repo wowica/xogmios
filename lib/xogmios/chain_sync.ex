@@ -13,11 +13,9 @@ defmodule Xogmios.ChainSync do
   Returning `{:ok, :next_block, new_state}` will request the next block once
   it's made available.
 
-  Returning `{:ok, new_state}` will not request anymore blocks. Typically used
-  in conjunction with `find_next_block/1` when syncing from a particular point
-  in the history of the chain.
+  Returning `{:ok, new_state}` will not request anymore blocks.
 
-  Returning `{:ok, :close, new_state}` will close the connection to the server.
+  Returning `{:close, new_state}` will close the connection to the server.
   """
   @callback handle_block(block :: map(), state) ::
               {:ok, :next_block, new_state}
@@ -109,16 +107,15 @@ defmodule Xogmios.ChainSync do
   end
 
   @doc """
-  Issues a message for finding the next block.
+  > #### Warning {: .warning}
+  >
+  > This is a highly experimental function and should not be relied on just yet.
 
-  This function should be used when manually syncing from a particular point in
-  the history of the chain.
-
-  The result of calling this method must be handled by the `c:handle_block/2`
-  callback
+  Issues a synchronous message for reading the next block.
+  Potentially useful for building chain indexers with support for backpressure mechanism.
   """
-  @spec find_next_block(pid()) :: {:ok, block :: map()} | :error
-  def find_next_block(pid) do
+  @spec read_next_block(pid()) :: {:ok, block :: map()} | :error
+  def read_next_block(pid) do
     # hacky af but it does the job for now
 
     state = :sys.get_state(pid)
