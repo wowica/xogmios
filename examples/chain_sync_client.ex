@@ -41,6 +41,6 @@ defmodule ChainSyncClient do
   @impl true
   def handle_block(block, state) do
     IO.puts("final handle_block #{block["height"]}")
-    {:ok, :close, state}
+    {:close, state}
   end
 end

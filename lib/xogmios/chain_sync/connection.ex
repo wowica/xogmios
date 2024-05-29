@@ -6,8 +6,6 @@ defmodule Xogmios.ChainSync.Connection do
 
   alias Xogmios.ChainSync.Messages
 
-  require Logger
-
   defmacro __using__(_opts) do
     quote do
       @behaviour :websocket_client
@@ -19,7 +17,7 @@ defmodule Xogmios.ChainSync.Connection do
 
       def child_spec(opts) do
         %{
-          id: __MODULE__,
+          id: Keyword.get(opts, :id, __MODULE__),
           start: {__MODULE__, :start_link, [opts]},
           shutdown: 5_000,
           restart: Keyword.get(opts, :restart, :transient),
@@ -38,9 +36,12 @@ defmodule Xogmios.ChainSync.Connection do
       end
 
       @impl true
-      def onconnect(_arg, state) do
+      def onconnect(connection, state) do
+        state = Map.put(state, :ws_pid, self())
+
         start_message = Messages.next_block_start()
         :websocket_client.cast(self(), {:text, start_message})
+        send(state.notify_on_connect, {:connected, connection})
 
         case state.handler.handle_connect(state) do
           {:ok, new_state} ->
