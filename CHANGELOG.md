@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add manual syncing mechanism for ChainSync. This adds an optional back-pressure when building chain indexers that rely on Xogmios. Tested with GenStage on [the following experimental branch](https://github.com/wowica/xogmios_watcher/tree/chain-indexer)
 
+- Fix process naming for ChainSync clients. Given different process names and ids as options, multiple clients are now supported.
+
 ### Changed
 
 - StateQuery.send_query interface. Now accepts queries as strings from user input.
