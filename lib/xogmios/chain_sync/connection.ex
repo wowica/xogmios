@@ -39,7 +39,7 @@ defmodule Xogmios.ChainSync.Connection do
       def onconnect(connection, state) do
         state = Map.put(state, :ws_pid, self())
 
-        start_message = Messages.next_block_start()
+        start_message = Messages.initial_sync()
         :websocket_client.cast(self(), {:text, start_message})
         send(state.notify_on_connect, {:connected, connection})
 

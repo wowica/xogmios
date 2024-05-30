@@ -15,17 +15,41 @@ defmodule ChainSync.TestHandler do
 
   @impl true
   def websocket_handle({:text, payload}, state) do
+    current_counter = Process.get(:counter) || 1
+
     case Jason.decode(payload) do
-      {:ok, %{"id" => "start"}} ->
+      {:ok, %{"id" => "initial_sync"}} ->
         payload =
           Jason.encode!(%{
             "method" => "nextBlock",
-            "result" => %{"direction" => "forward", "block" => %{}}
+            "result" => %{"direction" => "forward", "block" => %{"height" => 123}}
           })
 
+        Process.put(:counter, current_counter + 1)
         {:reply, {:text, payload}, state}
 
-      _ ->
+      {:ok, %{"method" => "nextBlock"}} ->
+        payload =
+          if current_counter == 2 do
+            Jason.encode!(%{
+              "method" => "nextBlock",
+              "result" => %{
+                "direction" => "backward",
+                "point" => %{"id" => "abc123", "slot" => 123}
+              }
+            })
+          else
+            Jason.encode!(%{
+              "method" => "nextBlock",
+              "result" => %{
+                "direction" => "forward",
+                "block" => %{"height" => 456}
+              }
+            })
+          end
+
+        Process.put(:counter, current_counter + 1)
+
         {:reply, {:text, payload}, state}
     end
   end
