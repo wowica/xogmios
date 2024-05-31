@@ -131,12 +131,12 @@ defmodule Xogmios.ChainSync do
   end
 
   @doc """
+  Issues a synchronous message for reading the next block.
+  Potentially useful for building chain indexers with support for backpressure mechanism.
+
   > #### Warning {: .warning}
   >
   > This is a highly experimental function and should not be relied on just yet.
-
-  Issues a synchronous message for reading the next block.
-  Potentially useful for building chain indexers with support for backpressure mechanism.
   """
   @spec read_next_block(pid()) :: {:ok, block :: map()} | :error
   def read_next_block(pid) do

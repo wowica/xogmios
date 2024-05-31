@@ -5,11 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.4.0](https://github.com/wowica/xogmios/releases/tag/v0.4.0) (2024-05-31)
 
-- Add manual syncing mechanism for ChainSync. This adds an optional back-pressure when building chain indexers that rely on Xogmios. Tested with GenStage on [the following experimental branch](https://github.com/wowica/xogmios_watcher/tree/chain-indexer)
+### Added
 
-- Fix process naming for ChainSync clients. Given different process names and ids as options, multiple clients are now supported.
+- ChainSync rollback event.
+
+- Experimental ChainSync manual syncing mechanism API. This adds an optional back-pressure when building chain indexers that rely on Xogmios. Tested with GenStage on [the following experimental branch](https://github.com/wowica/xogmios_watcher/tree/chain-indexer).
+
+### Fixed
+
+- Process naming for ChainSync clients. It is now possible to given different process names and ids as options to ChainSync clients, allowing multiple clients to run.
+
+## [v0.3.0](https://github.com/wowica/xogmios/releases/tag/v0.3.0) (2024-03-29)
 
 ### Changed
 
