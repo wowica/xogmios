@@ -77,6 +77,17 @@ defmodule ChainSyncClient do
     IO.puts("final handle_block #{block["height"]}")
     {:close, state}
   end
+
+  @impl true
+  def handle_rollback(point, state) do
+    IO.puts("handle_rollback")
+
+    # Use this information to update your custom state accordingly
+    IO.puts("Block id: #{point["id"]}")
+    IO.puts("Slot: #{point["slot"]}")
+
+    {:ok, :next_block, state}
+  end
 end
 ```
 

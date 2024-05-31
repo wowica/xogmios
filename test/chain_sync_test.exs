@@ -112,4 +112,42 @@ defmodule Xogmios.ChainSyncTest do
 
     assert pid4 == global_pid4
   end
+
+  defmodule DummyClientRollback do
+    use Xogmios, :chain_sync
+
+    def start_link(opts) do
+      opts = Keyword.merge(opts, after_rollback: false)
+      Xogmios.start_chain_sync_link(__MODULE__, opts)
+    end
+
+    @impl true
+    def handle_block(_block, %{after_rollback: true} = state) do
+      send(state.test_handler, :after_rollback)
+      {:close, state}
+    end
+
+    @impl true
+    def handle_block(_block, state) do
+      send(state.test_handler, :handle_block)
+      {:ok, :next_block, state}
+    end
+
+    @impl true
+    def handle_rollback(point, state) do
+      send(state.test_handler, {:rollback, point})
+      new_state = Map.put(state, :after_rollback, true)
+      {:ok, :next_block, new_state}
+    end
+  end
+
+  test "handle_rollback" do
+    pid = start_supervised!({DummyClientRollback, url: @ws_url, test_handler: self()})
+    assert is_pid(pid)
+    assert_receive :handle_block
+    assert_receive {:rollback, point}
+    assert point["id"]
+    assert point["slot"]
+    assert_receive :after_rollback
+  end
 end

@@ -10,6 +10,8 @@ defmodule Xogmios.ChainSync do
   @doc """
   Invoked when a new block is emitted. This callback is required.
 
+  Receives block information as argument and the current state of the handler.
+
   Returning `{:ok, :next_block, new_state}` will request the next block once
   it's made available.
 
@@ -18,6 +20,28 @@ defmodule Xogmios.ChainSync do
   Returning `{:close, new_state}` will close the connection to the server.
   """
   @callback handle_block(block :: map(), state) ::
+              {:ok, :next_block, new_state}
+              | {:ok, new_state}
+              | {:close, new_state}
+            when state: term(), new_state: term()
+
+  @doc """
+  Invoked when a rollback event is emitted. This callback is optional.
+
+  Receives as argument a point and the state of the handler. The point is a
+  map with keys for `id` (block id) and a `slot`. This information can then
+  be used by the handler module to perform the necessary corrections.
+  For example, resetting all current known state past this point and then
+  rewriting it from future invokations of `c:handle_block/2`
+
+  Returning `{:ok, :next_block, new_state}` will request the next block once
+  it's made available.
+
+  Returning `{:ok, new_state}` will not request anymore blocks.
+
+  Returning `{:close, new_state}` will close the connection to the server.
+  """
+  @callback handle_rollback(point :: map(), state) ::
               {:ok, :next_block, new_state}
               | {:ok, new_state}
               | {:close, new_state}
@@ -154,9 +178,10 @@ defmodule Xogmios.ChainSync do
 
       def handle_connect(state), do: {:ok, state}
       def handle_disconnect(_reason, state), do: {:ok, state}
-      defoverridable handle_connect: 1, handle_disconnect: 2
+      def handle_rollback(_point, state), do: {:ok, :next_block, state}
+      defoverridable handle_connect: 1, handle_disconnect: 2, handle_rollback: 2
 
-      def handle_message(%{"id" => "start"} = message, state) do
+      def handle_message(%{"id" => "initial_sync"} = message, state) do
         %{
           "method" => "nextBlock",
           "result" => %{"direction" => "backward", "tip" => tip}
@@ -185,16 +210,56 @@ defmodule Xogmios.ChainSync do
       end
 
       def handle_message(%{"method" => "findIntersection"}, state) do
-        message = Messages.next_block()
+        message = Messages.next_block_start()
         {:reply, {:text, message}, state}
       end
 
+      # This function handles the initial and unique roll backward event as
+      # part of finding and intersection.
+      #
+      #
+      # From Ogmios' official docs:
+      #
+      # "After successfully finding an intersection, the node will always ask
+      # to roll backward to that intersection point. This is because it is
+      # possible to provide many points when looking for an intersection and
+      # the protocol makes sure that both the node and the client are in sync.
+      # This allows clients applications to be somewhat “dumb” and blindly
+      # follow instructions from the node."
       def handle_message(
-            %{"method" => "nextBlock", "result" => %{"direction" => "backward"}},
+            %{
+              "id" => "next_block_start",
+              "method" => "nextBlock",
+              "result" => %{"direction" => "backward"}
+            } = message,
             state
           ) do
         message = Messages.next_block()
         {:reply, {:text, message}, state}
+      end
+
+      # This function handles rollbacks
+      def handle_message(
+            %{
+              "method" => "nextBlock",
+              "result" => %{"direction" => "backward"} = result
+            },
+            state
+          ) do
+        case state.handler.handle_rollback(result["point"], state) do
+          {:ok, :next_block, new_state} ->
+            message = Messages.next_block()
+            {:reply, {:text, message}, new_state}
+
+          {:ok, new_state} ->
+            {:ok, new_state}
+
+          {:close, new_state} ->
+            {:close, "finished", new_state}
+
+          response ->
+            Logger.warning("Invalid response #{inspect(response)}")
+        end
       end
 
       def handle_message(

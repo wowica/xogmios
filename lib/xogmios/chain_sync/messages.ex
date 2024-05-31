@@ -11,15 +11,32 @@ defmodule Xogmios.ChainSync.Messages do
   Once the response from this initial message is received, then
   the client proceeds with the appropriate syncing strategy.
   """
-  def next_block_start() do
-    # The `id:"start"` is returned as part of the message response,
+  def initial_sync() do
+    # The `id:"initial_sync"` is returned as part of the message response,
     # and helps the client determine that this is a "nextBlock" response
     # to the initial message.
     json = ~S"""
     {
       "jsonrpc": "2.0",
       "method": "nextBlock",
-      "id": "start"
+      "id": "initial_sync"
+    }
+    """
+
+    validate_json!(json)
+    json
+  end
+
+  @doc """
+  Request first block which preceeds the initial rollback received
+  as a response from Ogmios.
+  """
+  def next_block_start() do
+    json = ~S"""
+    {
+      "jsonrpc": "2.0",
+      "method": "nextBlock",
+      "id": "next_block_start"
     }
     """
 
@@ -76,6 +93,7 @@ defmodule Xogmios.ChainSync.Messages do
     {
       "jsonrpc": "2.0",
       "method": "findIntersection",
+      "id": "start",
       "params": {
           "points": [
             "origin",
@@ -93,7 +111,7 @@ defmodule Xogmios.ChainSync.Messages do
   end
 
   # The following are the last points (absolute slot and block id) of
-  # the previous era of each entry. The sync is done against the last
+  # the previous **mainnet** era of each entry. The sync is done against the last
   # point, so that the next block received is the first of the following era.
   @era_bounds %{
     shelley: {4_492_799, "f8084c61b6a238acec985b59310b6ecec49c0ab8352249afd7268da5cff2a457"},
@@ -104,7 +122,7 @@ defmodule Xogmios.ChainSync.Messages do
   }
 
   @doc """
-  Syncs with a particular era bound.
+  Syncs with a particular **mainnet** era bound.
 
   Values accepted are #{Map.keys(@era_bounds) |> Enum.map_join(",\n ", fn key -> "`:#{key}`" end)}
 
