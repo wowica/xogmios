@@ -5,7 +5,10 @@
 
 [Docs](https://hexdocs.pm/xogmios/)
 
-An Elixir client for [Ogmios](https://github.com/CardanoSolutions/ogmios).
+
+Xogmios is an Elixir client for the Cardano blockchain. You can use it to perform queries, stream blocks as they become available and submit transactions to the network.
+
+It connects to a Cardano node through [Ogmios](https://github.com/CardanoSolutions/ogmios).
 
 > Ogmios is a lightweight bridge interface for a Cardano node. It offers a WebSockets API that enables local clients to speak Ouroboros' mini-protocols via JSON/RPC. - https://ogmios.dev/
 
