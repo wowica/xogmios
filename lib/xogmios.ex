@@ -21,6 +21,7 @@ defmodule Xogmios do
   alias Xogmios.ChainSync
   alias Xogmios.StateQuery
   alias Xogmios.TxSubmission
+  alias Xogmios.Mempool
 
   @doc """
   Starts a new State Query process linked to the current process.
@@ -89,6 +90,11 @@ defmodule Xogmios do
     TxSubmission.start_link(client, opts)
   end
 
+  # TODO: doc
+  def start_mempool_link(client, opts) do
+    Mempool.start_link(client, opts)
+  end
+
   defmacro __using__(:state_query) do
     quote do
       use Xogmios.StateQuery
@@ -104,6 +110,12 @@ defmodule Xogmios do
   defmacro __using__(:tx_submission) do
     quote do
       use Xogmios.TxSubmission
+    end
+  end
+
+  defmacro __using__(:mempool) do
+    quote do
+      use Xogmios.Mempool
     end
   end
 end
