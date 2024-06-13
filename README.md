@@ -51,6 +51,10 @@ end
 
 The value for the `url` option should be set to the address of your Ogmios instance.
 
+If you don't have access to an Ogmios endpoint, you can use https://demeter.run/ and start one for free.
+
+**Note**: Xogmios only accepts `ws` or `wss` schemes. In order to connect to the Demeter Ogmios endpoint, you might need to replace the `https` scheme with `wss` on the URI that is displayed on the Demeter console.
+
 See section below for examples of client modules.
 
 ## Examples
