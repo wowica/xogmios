@@ -7,7 +7,18 @@ defmodule Xogmios.Mempool do
 
   require Logger
 
-  # TODO: doc
+  @doc """
+  Invoked when a new transaction is made available in the mempool.
+
+  Receives transaction information as argument and current state of the handler.
+
+  Returning `{:ok, :next_transaction, new_state}` will request the next transaction
+  once it's made available.
+
+  Returning `{:ok, new_state}` wil not request anymore transactions.
+
+  Returning `{:close, new_state}` will close the connection to the server
+  """
   @callback handle_transaction(transaction :: map(), state) ::
               {:ok, :next_transaction, new_state}
               | {:ok, new_state}
@@ -48,6 +59,7 @@ defmodule Xogmios.Mempool do
   def start_link(client, opts) do
     {url, opts} = Keyword.pop(opts, :url)
     {name, opts} = Keyword.pop(opts, :name, client)
+    opts = Keyword.put_new(opts, :include_details, false)
     initial_state = Keyword.merge(opts, handler: client, notify_on_connect: self())
 
     with {:ok, process_name} <- build_process_name(name),
@@ -98,6 +110,61 @@ defmodule Xogmios.Mempool do
     end
   end
 
+  @doc """
+  Issues a synchronous message for getting the size of the mempool.
+  """
+  @spec size_of_mempool(pid()) :: {:ok, response :: map()} | :error
+  def size_of_mempool(pid) do
+    # hacky af but it does the job for now
+    ws_pid = update_ws_with_caller(pid)
+
+    message = Xogmios.Mempool.Messages.size_of_mempool()
+    :websocket_client.cast(ws_pid, {:text, message})
+
+    receive do
+      {:ok, response} -> {:ok, response}
+    after
+      5_000 -> :error
+    end
+  end
+
+  @spec has_transaction(pid(), tx_id :: binary()) :: boolean()
+  def has_transaction(pid, tx_id) do
+    # hacky af but it does the job for now
+    ws_pid = update_ws_with_caller(pid)
+
+    message = Xogmios.Mempool.Messages.has_transaction(tx_id)
+    :websocket_client.cast(ws_pid, {:text, message})
+
+    receive do
+      {:ok, response} -> {:ok, response}
+    after
+      5_000 -> :error
+    end
+  end
+
+  # Updates Websocket process with self() as
+  # caller and returns the Websocket process id
+  defp update_ws_with_caller(pid) do
+    state = :sys.get_state(pid)
+
+    {_c, %{ws_pid: ws_pid}} = state |> elem(1) |> elem(5)
+
+    caller = self()
+
+    :sys.replace_state(pid, fn current_state ->
+      {:connected, {:context, req, transport, empty_list, ws, {module, client_info}, _, _, _}} =
+        current_state
+
+      updated_client_info = Map.put(client_info, :caller, caller)
+
+      {:connected,
+       {:context, req, transport, empty_list, ws, {module, updated_client_info}, "", true, 0}}
+    end)
+
+    ws_pid
+  end
+
   defmacro __using__(_opts) do
     quote do
       @behaviour Xogmios.Mempool
@@ -120,7 +187,7 @@ defmodule Xogmios.Mempool do
           ) do
         case state.handler.handle_acquired(%{"slot" => slot}, state) do
           {:ok, :next_transaction, new_state} ->
-            message = Messages.next_transaction()
+            message = Messages.next_transaction(state.include_details)
             {:reply, {:text, message}, new_state}
 
           {:ok, new_state} ->
@@ -166,6 +233,26 @@ defmodule Xogmios.Mempool do
           response ->
             Logger.warning("Invalid response #{inspect(response)}")
         end
+      end
+
+      # Responds to synchronous call
+      def handle_message(
+            %{"method" => "sizeOfMempool", "result" => result},
+            state
+          ) do
+        caller = Map.get(state, :caller)
+        send(caller, {:ok, result})
+        {:ok, state}
+      end
+
+      # Responds to synchronous call
+      def handle_message(
+            %{"method" => "hasTransaction", "result" => has_it},
+            state
+          ) do
+        caller = Map.get(state, :caller)
+        send(caller, {:ok, has_it})
+        {:ok, state}
       end
     end
   end

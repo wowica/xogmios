@@ -17,7 +17,7 @@ Mini-Protocols supported by this library:
 - [x] Chain Synchronization
 - [x] State Query
 - [x] Tx Submission
-- [ ] Mempool Monitoring
+- [x] Mempool Monitoring
 
 See [Examples](#examples) section below for information on how to use this library.
 

@@ -17,13 +17,51 @@ defmodule Xogmios.Mempool.Messages do
     json
   end
 
-  def next_transaction() do
+  def next_transaction(include_details \\ false) do
+    json =
+      if include_details do
+        ~S"""
+        {
+          "jsonrpc": "2.0",
+          "method": "nextTransaction",
+          "params": {
+            "fields": "all"
+          }
+        }
+        """
+      else
+        ~S"""
+        {
+          "jsonrpc": "2.0",
+          "method": "nextTransaction",
+          "params": {}
+        }
+        """
+      end
+
+    validate_json!(json)
+    json
+  end
+
+  def size_of_mempool() do
     json = ~S"""
     {
       "jsonrpc": "2.0",
-      "method": "nextTransaction",
+      "method": "sizeOfMempool"
+    }
+    """
+
+    validate_json!(json)
+    json
+  end
+
+  def has_transaction(tx_id) do
+    json = ~s"""
+    {
+      "jsonrpc": "2.0",
+      "method": "hasTransaction",
       "params": {
-        "fields": "all"
+        "id": "#{tx_id}"
       }
     }
     """
