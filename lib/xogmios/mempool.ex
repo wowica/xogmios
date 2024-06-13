@@ -128,7 +128,7 @@ defmodule Xogmios.Mempool do
     end
   end
 
-  @spec has_transaction(pid(), tx_id :: binary()) :: boolean()
+  @spec has_transaction(pid(), tx_id :: binary()) :: {:ok, boolean()} | :error
   def has_transaction(pid, tx_id) do
     # hacky af but it does the job for now
     ws_pid = update_ws_with_caller(pid)
