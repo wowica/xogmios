@@ -10,9 +10,25 @@ defmodule XogmiosWatcher.MempoolClient do
   end
 
   @impl true
-  def handle_transaction(transaction, state) do
-    IO.puts("transaction #{transaction["id"]}")
+  def handle_acquired(%{"slot" => slot} = _snapshot, state) do
+    IO.puts("Snapshot acquired at slot #{slot}")
 
     {:ok, :next_transaction, state}
+  end
+
+  @impl true
+  def handle_transaction(transaction, state) do
+    IO.puts("Transaction: #{transaction["id"]}")
+
+    {:ok, :next_transaction, state}
+  end
+
+  # Synchronous calls
+  def size(pid \\ __MODULE__) do
+    Xogmios.Mempool.size_of_mempool(pid)
+  end
+
+  def has_tx(pid \\ __MODULE__, tx_id) do
+    Xogmios.Mempool.has_transaction(pid, tx_id)
   end
 end

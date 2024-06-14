@@ -156,6 +156,48 @@ defmodule TxSubmissionClient do
 end
 ```
 
+### Mempool Monitoring
+
+The following illustrates working with the **Mempool Monitoring** protocol. It provides a way to list and query transactions in the mempool, and to query the size of the mempool.
+
+```elixir
+defmodule MempoolClient do
+  @moduledoc """
+  This module prints transactions as they become available
+  in the mempool
+  """
+  use Xogmios, :mempool
+
+  def start_link(opts) do
+    Xogmios.start_mempool_link(__MODULE__, opts)
+  end
+
+  # Callbacks
+  @impl true
+  def handle_acquired(%{"slot" => slot} = _snapshot, state) do
+    IO.puts("Snapshot acquired at slot #{slot}")
+
+    {:ok, :next_transaction, state}
+  end
+
+  @impl true
+  def handle_transaction(transaction, state) do
+    IO.puts("Transaction: #{transaction["id"]}")
+
+    {:ok, :next_transaction, state}
+  end
+
+  # Synchronous calls
+  def size(pid \\ __MODULE__) do
+    Xogmios.Mempool.size_of_mempool(pid)
+  end
+
+  def has_tx(pid \\ __MODULE__, tx_id) do
+    Xogmios.Mempool.has_transaction(pid, tx_id)
+  end
+end
+```
+
 For examples of applications using this library, see [Blocks](https://github.com/wowica/blocks) and [xogmios_watcher](https://github.com/wowica/xogmios_watcher).
 
 ## Test
