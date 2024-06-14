@@ -3,17 +3,25 @@ defmodule Xogmios do
   This is the top level module for Xogmios. It implements functions to be used by client
   modules that wish to connect with Ogmios.
 
-  When used, the it expects one of the supported mini-protocols as argument. For example:
+  When you `use` this module, it expects one of the supported mini-protocols as argument. For example:
 
       defmodule ChainSyncClient do
         use Xogmios, :chain_sync
         # ...
       end
 
-  or
-
       defmodule StateQueryClient do
         use Xogmios, :state_query
+        # ...
+      end
+
+      defmodule TxSubmissionClient do
+        use Xogmios, :tx_submission
+        # ...
+      end
+
+      defmodule MempoolClient do
+        use Xogmios, :mempool
         # ...
       end
   """
@@ -21,6 +29,7 @@ defmodule Xogmios do
   alias Xogmios.ChainSync
   alias Xogmios.StateQuery
   alias Xogmios.TxSubmission
+  alias Xogmios.Mempool
 
   @doc """
   Starts a new State Query process linked to the current process.
@@ -89,6 +98,30 @@ defmodule Xogmios do
     TxSubmission.start_link(client, opts)
   end
 
+  @doc """
+  Starts a new Mempool process linked to the current process.
+
+  `opts` as keyword lists are passed to the underlying :websocket_client.
+
+  The `:include_details` option can be used to determine which values
+  should be returned with each transaction as part of `c:Xogmios.Mempool.handle_transaction/2`.
+
+  Setting this option to `false` (default) means only transaction id is returned:
+
+  ```
+  Xogmios.start_mempool_link(__MODULE__, url: ogmios_url, include_details: false)
+  ```
+
+  Setting it to `true` means all transaction fields are returned:
+
+  ```
+  Xogmios.start_mempool_link(__MODULE__, url: ogmios_url, include_details: true)
+  ```
+  """
+  def start_mempool_link(client, opts) do
+    Mempool.start_link(client, opts)
+  end
+
   defmacro __using__(:state_query) do
     quote do
       use Xogmios.StateQuery
@@ -104,6 +137,12 @@ defmodule Xogmios do
   defmacro __using__(:tx_submission) do
     quote do
       use Xogmios.TxSubmission
+    end
+  end
+
+  defmacro __using__(:mempool) do
+    quote do
+      use Xogmios.Mempool
     end
   end
 end
