@@ -8,6 +8,24 @@ defmodule Xogmios.Mempool do
   require Logger
 
   @doc """
+  Invoked when a new snapshot is acquired.
+
+  Receives snapshot information as argument.
+
+  Returning `{:ok, :next_transaction, new_state}` will request the next transaction
+  once it's made available.
+
+  Returning `{:ok, new_state}` wil not request anymore transactions.
+
+  Returning `{:close, new_state}` will close the connection to the server.
+  """
+  @callback handle_acquired(snapshop :: map(), state) ::
+              {:ok, :next_transaction, new_state}
+              | {:ok, new_state}
+              | {:close, new_state}
+            when state: term(), new_state: term()
+
+  @doc """
   Invoked when a new transaction is made available in the mempool.
 
   Receives transaction information as argument and current state of the handler.
@@ -17,7 +35,7 @@ defmodule Xogmios.Mempool do
 
   Returning `{:ok, new_state}` wil not request anymore transactions.
 
-  Returning `{:close, new_state}` will close the connection to the server
+  Returning `{:close, new_state}` will close the connection to the server.
   """
   @callback handle_transaction(transaction :: map(), state) ::
               {:ok, :next_transaction, new_state}
@@ -175,7 +193,7 @@ defmodule Xogmios.Mempool do
 
       def handle_connect(state), do: {:ok, state}
       def handle_disconnect(_reason, state), do: {:ok, state}
-      def handle_acquired(_slot, state), do: {:ok, :next_transaction, state}
+      def handle_acquired(_snapshot, state), do: {:ok, :next_transaction, state}
       defoverridable handle_connect: 1, handle_disconnect: 2, handle_acquired: 2
 
       def handle_message(
