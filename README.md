@@ -188,12 +188,12 @@ defmodule MempoolClient do
   end
 
   # Synchronous calls
-  def size(pid \\ __MODULE__) do
-    Xogmios.Mempool.size_of_mempool(pid)
+  def get_size(pid \\ __MODULE__) do
+    Xogmios.Mempool.get_size(pid)
   end
 
-  def has_tx(pid \\ __MODULE__, tx_id) do
-    Xogmios.Mempool.has_transaction(pid, tx_id)
+  def has_tx?(pid \\ __MODULE__, tx_id) do
+    Xogmios.Mempool.has_transaction?(pid, tx_id)
   end
 end
 ```
