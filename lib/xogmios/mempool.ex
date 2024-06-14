@@ -131,8 +131,8 @@ defmodule Xogmios.Mempool do
   @doc """
   Issues a synchronous message for getting the size of the mempool.
   """
-  @spec size_of_mempool(pid()) :: {:ok, response :: map()} | :error
-  def size_of_mempool(pid) do
+  @spec get_size(pid()) :: {:ok, response :: map()} | :error
+  def get_size(pid) do
     # hacky af but it does the job for now
     ws_pid = update_ws_with_caller(pid)
 
@@ -146,8 +146,8 @@ defmodule Xogmios.Mempool do
     end
   end
 
-  @spec has_transaction(pid(), tx_id :: binary()) :: {:ok, boolean()} | :error
-  def has_transaction(pid, tx_id) do
+  @spec has_transaction?(pid(), tx_id :: binary()) :: {:ok, boolean()} | :error
+  def has_transaction?(pid, tx_id) do
     # hacky af but it does the job for now
     ws_pid = update_ws_with_caller(pid)
 
