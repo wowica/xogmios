@@ -41,7 +41,6 @@ defmodule Xogmios.ChainSync.Connection do
 
         start_message = Messages.initial_sync()
         :websocket_client.cast(self(), {:text, start_message})
-        send(state.notify_on_connect, {:connected, connection})
 
         case state.handler.handle_connect(state) do
           {:ok, new_state} ->

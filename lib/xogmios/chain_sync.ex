@@ -88,20 +88,11 @@ defmodule Xogmios.ChainSync do
     {url, opts} = Keyword.pop(opts, :url)
     {name, opts} = Keyword.pop(opts, :name, client)
 
-    initial_state = Keyword.merge(opts, handler: client, notify_on_connect: self())
+    initial_state = Keyword.merge(opts, handler: client)
 
     with {:ok, process_name} <- build_process_name(name),
          {:ok, ws_pid} <- start_link(process_name, url, client, initial_state) do
-      # Blocks until the connection with the Ogmios server
-      # is established or until timeout is reached.
-      receive do
-        {:connected, _connection} -> {:ok, ws_pid}
-      after
-        _timeout = 5_000 ->
-          Logger.warning("Timeout connecting to Ogmios server")
-          send(ws_pid, :close)
-          {:error, :connection_timeout}
-      end
+      {:ok, ws_pid}
     else
       {:error, :invalid_process_name} = error ->
         error
