@@ -20,7 +20,7 @@ defmodule Xogmios.ChainSync.Connection do
           id: Keyword.get(opts, :id, __MODULE__),
           start: {__MODULE__, :start_link, [opts]},
           shutdown: 5_000,
-          restart: Keyword.get(opts, :restart, :transient),
+          restart: Keyword.get(opts, :restart, :temporary),
           type: :worker
         }
       end
@@ -41,7 +41,6 @@ defmodule Xogmios.ChainSync.Connection do
 
         start_message = Messages.initial_sync()
         :websocket_client.cast(self(), {:text, start_message})
-        send(state.notify_on_connect, {:connected, connection})
 
         case state.handler.handle_connect(state) do
           {:ok, new_state} ->
@@ -55,11 +54,17 @@ defmodule Xogmios.ChainSync.Connection do
       @impl true
       def ondisconnect(reason, state) do
         case state.handler.handle_disconnect(reason, state) do
-          {:ok, state} ->
-            {:ok, state}
-
+          # Attempt to reconnect after interval in ms
           {:reconnect, reconnect_interval_in_ms, new_state} ->
             {:reconnect, reconnect_interval_in_ms, new_state}
+
+          # Shut the process down cleanly
+          {:close, reason, state} ->
+            {:close, reason, state}
+
+          # Disconnect but keeps process alive
+          {:ok, state} ->
+            {:ok, state}
         end
       end
 

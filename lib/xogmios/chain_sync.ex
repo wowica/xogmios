@@ -56,14 +56,20 @@ defmodule Xogmios.ChainSync do
   @doc """
   Invoked upon disconnecting from the server. This callback is optional.
 
-  Returning `{:ok, new_state}` will allow the connection to close.
+  Returning `{:reconnect, interval_in_ms, new_state}` will attempt a reconnection
+  after `interval_in_ms`.
 
-  Returning `{:reconnect, interval_in_ms}` will attempt a reconnection after `interval_in_ms`
+  Returning `{:close, reason, new_state}` will allow the connection to close and
+  shut the process down cleanly.
+
+  Returning `{:ok, new_state}` will allow the connection to close but keeps
+  process alive.
   """
-  @callback handle_disconnect(reason :: String.t(), state) ::
-              {:ok, new_state}
-              | {:reconnect, interval_in_ms :: non_neg_integer(), new_state}
-            when state: term(), new_state: term()
+  @callback handle_disconnect(reason, state) ::
+              {:reconnect, interval_in_ms :: non_neg_integer(), new_state}
+              | {:close, reason, new_state}
+              | {:ok, new_state}
+            when reason: String.t(), state: term(), new_state: term()
 
   # The keepalive option is used to maintain the connection active.
   # This is important because proxies might close idle connections after a few seconds.
@@ -81,20 +87,12 @@ defmodule Xogmios.ChainSync do
   def start_link(client, opts) do
     {url, opts} = Keyword.pop(opts, :url)
     {name, opts} = Keyword.pop(opts, :name, client)
-    initial_state = Keyword.merge(opts, handler: client, notify_on_connect: self())
+
+    initial_state = Keyword.merge(opts, handler: client)
 
     with {:ok, process_name} <- build_process_name(name),
          {:ok, ws_pid} <- start_link(process_name, url, client, initial_state) do
-      # Blocks until the connection with the Ogmios server
-      # is established or until timeout is reached.
-      receive do
-        {:connected, _connection} -> {:ok, ws_pid}
-      after
-        _timeout = 5_000 ->
-          Logger.warning("Timeout connecting to Ogmios server")
-          send(ws_pid, :close)
-          {:error, :connection_timeout}
-      end
+      {:ok, ws_pid}
     else
       {:error, :invalid_process_name} = error ->
         error
