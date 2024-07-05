@@ -28,7 +28,7 @@ Add the dependency to `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:xogmios, "~> 0.4.0"}
+    {:xogmios, "~> 0.4.1"}
   ]
 end
 ```
