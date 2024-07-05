@@ -161,3 +161,7 @@ For examples of applications using this library, see [Blocks](https://github.com
 ## Test
 
 Run `mix test`. Tests do NOT rely on a running Ogmios instance.
+
+## Help
+
+Join the #elixir channel in the [TxPipe Discord](https://discord.gg/ZTHcHUy5HY)
