@@ -20,8 +20,8 @@ defmodule Xogmios do
         # ...
       end
 
-      defmodule MempoolClient do
-        use Xogmios, :mempool
+      defmodule MempoolTxsClient do
+        use Xogmios, :mempool_txs
         # ...
       end
   """
@@ -29,7 +29,7 @@ defmodule Xogmios do
   alias Xogmios.ChainSync
   alias Xogmios.StateQuery
   alias Xogmios.TxSubmission
-  alias Xogmios.Mempool
+  alias Xogmios.MempoolTxs
 
   @doc """
   Starts a new State Query process linked to the current process.
@@ -119,7 +119,7 @@ defmodule Xogmios do
   ```
   """
   def start_mempool_link(client, opts) do
-    Mempool.start_link(client, opts)
+    MempoolTxs.start_link(client, opts)
   end
 
   defmacro __using__(:state_query) do
