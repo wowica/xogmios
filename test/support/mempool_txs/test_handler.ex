@@ -1,4 +1,4 @@
-defmodule Mempool.TestHandler do
+defmodule MempoolTxs.TestHandler do
   @moduledoc false
 
   @behaviour :cowboy_websocket

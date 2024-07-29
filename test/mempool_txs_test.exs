@@ -4,7 +4,7 @@ defmodule Xogmios.MempoolTest do
   @ws_url TestServer.get_url()
 
   setup_all do
-    {:ok, _server} = TestServer.start(handler: Mempool.TestHandler)
+    {:ok, _server} = TestServer.start(handler: MempoolTxs.TestHandler)
 
     on_exit(fn ->
       TestServer.shutdown()
@@ -14,7 +14,7 @@ defmodule Xogmios.MempoolTest do
   end
 
   defmodule DummyClient do
-    use Xogmios, :mempool
+    use Xogmios, :mempool_txs
 
     def start_link(opts) do
       Xogmios.start_mempool_link(__MODULE__, opts)

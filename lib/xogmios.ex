@@ -140,9 +140,15 @@ defmodule Xogmios do
     end
   end
 
-  defmacro __using__(:mempool) do
+  defmacro __using__(:mempool_txs) do
     quote do
-      use Xogmios.Mempool
+      use Xogmios.MempoolTxs
+    end
+  end
+
+  defmacro __using__(_opts) do
+    quote do
+      raise "Unsupported method"
     end
   end
 end
