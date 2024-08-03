@@ -17,7 +17,7 @@ Mini-Protocols supported by this library:
 - [x] Chain Synchronization
 - [x] State Query
 - [x] Tx Submission
-- [ ] Mempool Monitoring
+- [x] Mempool Monitoring (reads transactions only)
 
 See [Examples](#examples) section below for information on how to use this library.
 
@@ -152,6 +152,39 @@ defmodule TxSubmissionClient do
     # The CBOR must be a valid transaction,
     # properly built and signed
     TxSubmission.submit_tx(pid, cbor)
+  end
+end
+```
+
+### Mempool Monitoring
+
+The following illustrates working with the **Mempool Monitoring** protocol. It provides a way to list transactions in the mempool.
+
+```elixir
+defmodule MempoolTxsClient do
+  @moduledoc """
+  This module prints transactions as they become available
+  in the mempool
+  """
+  use Xogmios, :mempool_txs
+
+  def start_link(opts) do
+    Xogmios.start_mempool_txs_link(__MODULE__, opts)
+  end
+
+  # Callbacks
+  @impl true
+  def handle_acquired(%{"slot" => slot} = _snapshot, state) do
+    IO.puts("Snapshot acquired at slot #{slot}")
+
+    {:ok, :next_transaction, state}
+  end
+
+  @impl true
+  def handle_transaction(transaction, state) do
+    IO.puts("Transaction: #{transaction["id"]}")
+
+    {:ok, :next_transaction, state}
   end
 end
 ```
