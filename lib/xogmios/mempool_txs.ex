@@ -1,7 +1,7 @@
 defmodule Xogmios.MempoolTxs do
   @moduledoc """
-  This module interfaces with the Mempool protocol and specializes
-  strictly in reading transactions as they come in (`nextTransaction`).
+  This module interfaces with the Mempool protocol for reading
+  transactions as they become available (`nextTransaction`).
   """
 
   alias Xogmios.Mempool.Messages

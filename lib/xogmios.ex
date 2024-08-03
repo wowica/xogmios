@@ -99,26 +99,26 @@ defmodule Xogmios do
   end
 
   @doc """
-  Starts a new Mempool process linked to the current process.
+  Starts a new MempoolTxs (Transactions) process linked to the current process.
 
   `opts` as keyword lists are passed to the underlying :websocket_client.
 
-  The `:include_details` option can be used to determine which values
-  should be returned with each transaction as part of `c:Xogmios.Mempool.handle_transaction/2`.
+  The `:include_details` flag can be used to determine the level of details
+  to be returned with each transaction as part of `c:Xogmios.Mempool.handle_transaction/2`.
 
   Setting this option to `false` (default) means only transaction id is returned:
 
   ```
-  Xogmios.start_mempool_link(__MODULE__, url: ogmios_url, include_details: false)
+  Xogmios.start_mempool_txs_link(__MODULE__, url: ogmios_url, include_details: false)
   ```
 
   Setting it to `true` means all transaction fields are returned:
 
   ```
-  Xogmios.start_mempool_link(__MODULE__, url: ogmios_url, include_details: true)
+  Xogmios.start_mempool_txs_link(__MODULE__, url: ogmios_url, include_details: true)
   ```
   """
-  def start_mempool_link(client, opts) do
+  def start_mempool_txs_link(client, opts) do
     MempoolTxs.start_link(client, opts)
   end
 

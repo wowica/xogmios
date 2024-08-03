@@ -17,7 +17,7 @@ Mini-Protocols supported by this library:
 - [x] Chain Synchronization
 - [x] State Query
 - [x] Tx Submission
-- [x] Mempool Monitoring
+- [x] Mempool Monitoring (reads transactions only)
 
 See [Examples](#examples) section below for information on how to use this library.
 
@@ -158,10 +158,10 @@ end
 
 ### Mempool Monitoring
 
-The following illustrates working with the **Mempool Monitoring** protocol. It provides a way to list and query transactions in the mempool, and to query the size of the mempool.
+The following illustrates working with the **Mempool Monitoring** protocol. It provides a way to list transactions in the mempool.
 
 ```elixir
-defmodule MempoolClient do
+defmodule MempoolTxsClient do
   @moduledoc """
   This module prints transactions as they become available
   in the mempool
@@ -169,7 +169,7 @@ defmodule MempoolClient do
   use Xogmios, :mempool_txs
 
   def start_link(opts) do
-    Xogmios.start_mempool_link(__MODULE__, opts)
+    Xogmios.start_mempool_txs_link(__MODULE__, opts)
   end
 
   # Callbacks
