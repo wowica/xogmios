@@ -17,7 +17,7 @@ defmodule Xogmios.MempoolTest do
     use Xogmios, :mempool_txs
 
     def start_link(opts) do
-      Xogmios.start_mempool_link(__MODULE__, opts)
+      Xogmios.start_mempool_txs_link(__MODULE__, opts)
     end
 
     @impl true
