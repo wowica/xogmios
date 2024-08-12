@@ -21,19 +21,36 @@ Mini-Protocols supported by this library:
 
 See [Examples](#examples) section below for information on how to use this library.
 
-## Installing
+## Installation
 
 Add the dependency to `mix.exs`:
 
 ```elixir
 defp deps do
   [
-    {:xogmios, "~> 0.4.1"}
+    {:xogmios, ">= 0.0.1"}
   ]
 end
 ```
 
-Add your client modules to your application's supervision tree as such:
+Then run `mix deps.get`
+
+## Setup
+
+The mix task `xogmios.gen.client` is available to help generate the necessary
+client code for each of the supported mini-protocols. Information on usage can
+be found by running the following mix task:
+
+`mix help xogmios.gen.client`.
+
+For example, the following mix command generates a client module for the
+ChainSync mini-protocol:
+
+`mix xogmios.gen.client -p chain_sync ChainSyncClient`
+
+A new file should be created at _./lib/my_app/chain_sync_client.ex_
+
+Add this new module to your application's supervision tree as such:
 
 ```elixir
 # file: application.ex
@@ -41,9 +58,7 @@ def start(_type, _args) do
   ogmios_url = System.fetch_env!("OGMIOS_URL")
 
   children = [
-    {ChainSyncClient, url: ogmios_url},
-    {StateQueryClient, url: ogmios_url},
-    {TxSubmissionClient, url: ogmios_url}
+    {MyApp.ChainSyncClient, url: ogmios_url}
   ]
   #...
 end
