@@ -50,6 +50,29 @@ ChainSync mini-protocol:
 
 A new file should be created at _./lib/my_app/chain_sync_client.ex_
 
+```elixir
+defmodule MyApp.ChainSyncClient do
+  @moduledoc """
+  This module syncs with the chain and reads new blocks
+  as they become available.
+  """
+
+  use Xogmios, :chain_sync
+
+  def start_link(opts) do
+    initial_state = []
+    opts = Keyword.merge(opts, initial_state)
+    Xogmios.start_chain_sync_link(__MODULE__, opts)
+  end
+
+  @impl true
+  def handle_block(block, state) do
+    IO.puts("handle_block #{block["height"]}")
+    {:ok, :next_block, state}
+  end
+end
+```
+
 Add this new module to your application's supervision tree as such:
 
 ```elixir
@@ -63,6 +86,8 @@ def start(_type, _args) do
   #...
 end
 ```
+
+Be sure the env `OGMIOS_URL` is populated and then start your mix application.
 
 The value for the `url` option should be set to the address of your Ogmios instance.
 

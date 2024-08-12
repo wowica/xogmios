@@ -96,7 +96,8 @@ defmodule Mix.Tasks.Xogmios.Gen.Client do
     """
     defmodule <%= @app_module_name %>.<%= @client_module_name %> do
       @moduledoc \"\"\"
-      This module syncs with the chain and reads new blocks.
+      This module syncs with the chain and reads new blocks
+      as they become available.
 
       Be sure to add this module to your app's supervision tree like so:
 
