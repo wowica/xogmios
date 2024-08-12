@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Added partial support for Mempool monitoring mini-protocol. Allows reading transactions in the mempool.
+- Added generators mix task for generating boilerplate code for client modules: `mix help xogmios.gen.client`
 
 ## [v0.4.1](https://github.com/wowica/xogmios/releases/tag/v0.4.1) (2024-06-05)
 
