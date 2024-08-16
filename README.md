@@ -28,7 +28,7 @@ Add the dependency to `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:xogmios, ">= 0.0.1"}
+    {:xogmios, ">= 0.0.0"}
   ]
 end
 ```
@@ -41,12 +41,16 @@ The mix task `xogmios.gen.client` is available to help generate the necessary
 client code for each of the supported mini-protocols. Information on usage can
 be found by running the following mix task:
 
-`mix help xogmios.gen.client`.
+```bash
+mix help xogmios.gen.client
+```
 
-For example, the following mix command generates a client module for the
+For example, the following mix task generates a client module for the
 ChainSync mini-protocol:
 
-`mix xogmios.gen.client -p chain_sync ChainSyncClient`
+```bash
+mix xogmios.gen.client -p chain_sync ChainSyncClient
+```
 
 A new file should be created at _./lib/my_app/chain_sync_client.ex_
 
