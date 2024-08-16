@@ -72,7 +72,7 @@ defmodule Xogmios.MempoolTxs do
   @doc """
   Starts a new Mempool process linked to the current process.
 
-  This function should not be called directly, but rather via `Xogmios.start_mempool_link/2`
+  This function should not be called directly, but rather via `Xogmios.start_mempool_txs_link/2`
   """
   @spec start_link(module(), start_options :: Keyword.t()) :: {:ok, pid()} | {:error, term()}
   def start_link(client, opts) do
