@@ -2,6 +2,7 @@ defmodule Xogmios.TxSubmissionTest do
   use ExUnit.Case
 
   @ws_url TestServer.get_url()
+  @eras ["allegra", "alonzo", "babbage", "conway", "mary", "shelley"]
 
   setup_all do
     {:ok, _server} = TestServer.start(handler: TxSubmission.TestHandler)
@@ -38,10 +39,18 @@ defmodule Xogmios.TxSubmissionTest do
     assert {:ok, %{"transaction" => %{"id" => _id}}} =
              DummyClient.submit_tx(_cbor = "valid-cbor-value")
 
-    assert {:error, reason} =
+    assert {:error, info} =
              DummyClient.submit_tx(_cbor = "invalid-cbor-value")
 
-    assert reason =~ "Invalid transaction"
+    assert info["code"] == -32_602
+    assert data = info["data"]
+
+    for era <- Map.keys(data) do
+      assert era in @eras
+      assert data[era] =~ "invalid or incomplete value of"
+    end
+
+    assert info["message"] =~ "Invalid transaction"
   end
 
   test "transaction evaluation" do
@@ -50,6 +59,19 @@ defmodule Xogmios.TxSubmissionTest do
     Process.sleep(1_000)
 
     assert {:ok, [%{"budget" => _budget, "validator" => _validator}]} =
-             DummyClient.evaluate_tx(_cbor = "valid-cbor-value")
+             DummyClient.evaluate_tx(_cbor = "valid-cbor-value-evaluate")
+
+    assert {:error, info} =
+             DummyClient.evaluate_tx(_cbor = "invalid-cbor-value-evaluate")
+
+    assert info["code"] == -32_602
+    assert data = info["data"]
+
+    for era <- Map.keys(data) do
+      assert era in @eras
+      assert data[era] =~ "invalid or incomplete value of"
+    end
+
+    assert info["message"] =~ "Invalid transaction"
   end
 end
