@@ -27,7 +27,12 @@ defmodule TxSubmission.TestHandler do
 
   @valid_tx_evaluation_cbor %{
     "method" => "evaluateTransaction",
-    "params" => %{"transaction" => %{"cbor" => "valid-cbor-value"}}
+    "params" => %{"transaction" => %{"cbor" => "valid-cbor-value-evaluate"}}
+  }
+
+  @invalid_tx_evaluation_cbor %{
+    "method" => "evaluateTransaction",
+    "params" => %{"transaction" => %{"cbor" => "invalid-cbor-value-evaluate"}}
   }
 
   @impl true
@@ -87,6 +92,35 @@ defmodule TxSubmission.TestHandler do
                 "validator" => %{"index" => 0, "purpose" => "spend"}
               }
             ]
+          })
+
+        {:reply, {:text, payload}, state}
+
+      {:ok, @invalid_tx_evaluation_cbor} ->
+        payload =
+          Jason.encode!(%{
+            "error" => %{
+              "code" => -32_602,
+              "data" => %{
+                "allegra" =>
+                  "invalid or incomplete value of type 'Transaction': Size mismatch when decoding Object / Array. Expected 3, but found 4.",
+                "alonzo" =>
+                  "invalid or incomplete value of type 'Transaction': expected list len or indef",
+                "babbage" =>
+                  "invalid or incomplete value of type 'Transaction': Failed to decode AuxiliaryData",
+                "conway" =>
+                  "invalid or incomplete value of type 'Transaction': Failed to decode AuxiliaryData",
+                "mary" =>
+                  "invalid or incomplete value of type 'Transaction': Size mismatch when decoding Object / Array. Expected 3, but found 4.",
+                "shelley" =>
+                  "invalid or incomplete value of type 'Transaction': Size mismatch when decoding Object / Array. Expected 3, but found 4."
+              },
+              "message" =>
+                "Invalid transaction; It looks like the given transaction wasn't well-formed. Note that I try to decode the transaction in every possible era and it was malformed in ALL eras. Yet, I can't pinpoint the exact issue for I do not know in which era / format you intended the transaction to be. The 'data' field, therefore, contains errors for each era."
+            },
+            "id" => nil,
+            "jsonrpc" => "2.0",
+            "method" => "evaluateTransaction"
           })
 
         {:reply, {:text, payload}, state}

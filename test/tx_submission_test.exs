@@ -41,7 +41,30 @@ defmodule Xogmios.TxSubmissionTest do
     assert {:error, info} =
              DummyClient.submit_tx(_cbor = "invalid-cbor-value")
 
-    assert info["code"] == -32602
+    assert info["code"] == -32_602
+    assert data = info["data"]
+    eras = Map.keys(data)
+
+    for era <- eras do
+      assert era in ["allegra", "alonzo", "babbage", "conway", "mary", "shelley"]
+      assert data[era] =~ "invalid or incomplete value of"
+    end
+
+    assert info["message"] =~ "Invalid transaction"
+  end
+
+  test "transaction evaluation" do
+    pid = start_supervised!({DummyClient, url: @ws_url})
+    assert is_pid(pid)
+    Process.sleep(1_000)
+
+    assert {:ok, [%{"budget" => _budget, "validator" => _validator}]} =
+             DummyClient.evaluate_tx(_cbor = "valid-cbor-value-evaluate")
+
+    assert {:error, info} =
+             DummyClient.evaluate_tx(_cbor = "invalid-cbor-value-evaluate")
+
+    assert info["code"] == -32_602
     assert data = info["data"]
     eras = Map.keys(data)
 
