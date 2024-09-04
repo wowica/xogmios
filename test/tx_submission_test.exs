@@ -44,9 +44,8 @@ defmodule Xogmios.TxSubmissionTest do
 
     assert info["code"] == -32_602
     assert data = info["data"]
-    eras = Map.keys(data)
 
-    for era <- eras do
+    for era <- Map.keys(data) do
       assert era in @eras
       assert data[era] =~ "invalid or incomplete value of"
     end
@@ -67,9 +66,8 @@ defmodule Xogmios.TxSubmissionTest do
 
     assert info["code"] == -32_602
     assert data = info["data"]
-    eras = Map.keys(data)
 
-    for era <- eras do
+    for era <- Map.keys(data) do
       assert era in @eras
       assert data[era] =~ "invalid or incomplete value of"
     end
