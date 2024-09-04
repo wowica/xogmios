@@ -15,8 +15,8 @@ defmodule Xogmios.TxSubmission.Server do
     {:ok, state}
   end
 
-  defp handle_message(%{"error" => %{"message" => message}}, state) do
-    GenServer.reply(state.caller, {:error, message})
+  defp handle_message(%{"error" => error_info}, state) do
+    GenServer.reply(state.caller, {:error, error_info})
     {:ok, state}
   end
 
