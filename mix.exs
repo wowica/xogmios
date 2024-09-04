@@ -3,7 +3,7 @@ defmodule Xogmios.MixProject do
 
   @description "An Elixir client for Ogmios"
   @source_url "https://github.com/wowica/xogmios"
-  @version "0.5.0"
+  @version "0.5.1"
 
   def project do
     [
