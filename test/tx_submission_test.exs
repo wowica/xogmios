@@ -2,6 +2,7 @@ defmodule Xogmios.TxSubmissionTest do
   use ExUnit.Case
 
   @ws_url TestServer.get_url()
+  @eras ["allegra", "alonzo", "babbage", "conway", "mary", "shelley"]
 
   setup_all do
     {:ok, _server} = TestServer.start(handler: TxSubmission.TestHandler)
@@ -46,7 +47,7 @@ defmodule Xogmios.TxSubmissionTest do
     eras = Map.keys(data)
 
     for era <- eras do
-      assert era in ["allegra", "alonzo", "babbage", "conway", "mary", "shelley"]
+      assert era in @eras
       assert data[era] =~ "invalid or incomplete value of"
     end
 
@@ -69,7 +70,7 @@ defmodule Xogmios.TxSubmissionTest do
     eras = Map.keys(data)
 
     for era <- eras do
-      assert era in ["allegra", "alonzo", "babbage", "conway", "mary", "shelley"]
+      assert era in @eras
       assert data[era] =~ "invalid or incomplete value of"
     end
 
