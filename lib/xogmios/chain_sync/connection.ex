@@ -4,6 +4,7 @@ defmodule Xogmios.ChainSync.Connection do
   for the Chain Synchronization protocol.
   """
 
+  require Logger
   alias Xogmios.ChainSync.Messages
 
   defmacro __using__(_opts) do
@@ -35,19 +36,41 @@ defmodule Xogmios.ChainSync.Connection do
         {:reconnect, initial_state}
       end
 
+      defp health_check(url) do
+        health_check_client =
+          Application.get_env(:xogmios, Xogmios.HealthCheck, [])
+          |> Keyword.get(:client, Xogmios.HealthCheck)
+
+        health_check_client.run(url)
+      end
+
+      defp send_initial_sync_message do
+        start_message = Messages.initial_sync()
+        :websocket_client.cast(self(), {:text, start_message})
+      end
+
       @impl true
       def onconnect(connection, state) do
         state = Map.put(state, :ws_pid, self())
 
-        start_message = Messages.initial_sync()
-        :websocket_client.cast(self(), {:text, start_message})
+        with :ok <- health_check(state.url),
+             :ok <- send_initial_sync_message() do
+          case state.handler.handle_connect(state) do
+            {:ok, new_state} ->
+              {:ok, new_state}
 
-        case state.handler.handle_connect(state) do
-          {:ok, new_state} ->
-            {:ok, new_state}
+            _ ->
+              {:ok, state}
+          end
+        else
+          {:error, _reason} ->
+            Logger.warning("""
+            Ogmios is not yet ready to provide data. \
+            This is likely due to the underlying Cardano node not being fully synced. \
+            Trying again in 5 seconds.
+            """)
 
-          _ ->
-            {:ok, state}
+            {:reconnect, 5_000, state}
         end
       end
 
