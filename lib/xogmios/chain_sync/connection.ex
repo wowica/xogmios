@@ -3,8 +3,9 @@ defmodule Xogmios.ChainSync.Connection do
   This module implements a connection with the Ogmios Websocket server
   for the Chain Synchronization protocol.
   """
-
   require Logger
+
+  alias Xogmios.HealthCheck
   alias Xogmios.ChainSync.Messages
 
   defmacro __using__(_opts) do
@@ -26,6 +27,11 @@ defmodule Xogmios.ChainSync.Connection do
         }
       end
 
+      defp send_initial_sync_message do
+        start_message = Messages.initial_sync()
+        :websocket_client.cast(self(), {:text, start_message})
+      end
+
       @impl true
       def init(state) do
         initial_state =
@@ -36,24 +42,11 @@ defmodule Xogmios.ChainSync.Connection do
         {:reconnect, initial_state}
       end
 
-      defp health_check(url) do
-        health_check_client =
-          Application.get_env(:xogmios, Xogmios.HealthCheck, [])
-          |> Keyword.get(:client, Xogmios.HealthCheck)
-
-        health_check_client.run(url)
-      end
-
-      defp send_initial_sync_message do
-        start_message = Messages.initial_sync()
-        :websocket_client.cast(self(), {:text, start_message})
-      end
-
       @impl true
       def onconnect(connection, state) do
         state = Map.put(state, :ws_pid, self())
 
-        with :ok <- health_check(state.url),
+        with :ok <- HealthCheck.run(state.url),
              :ok <- send_initial_sync_message() do
           case state.handler.handle_connect(state) do
             {:ok, new_state} ->

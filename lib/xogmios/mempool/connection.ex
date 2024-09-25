@@ -4,6 +4,7 @@ defmodule Xogmios.Mempool.Connection do
   for the Mempool protocol.
   """
 
+  alias Xogmios.HealthCheck
   alias Xogmios.Mempool.Messages
 
   defmacro __using__(_opts) do
@@ -25,6 +26,11 @@ defmodule Xogmios.Mempool.Connection do
         }
       end
 
+      defp acquire_mempool do
+        start_message = Messages.acquire_mempool()
+        :websocket_client.cast(self(), {:text, start_message})
+      end
+
       @impl true
       def init(state) do
         initial_state =
@@ -35,24 +41,11 @@ defmodule Xogmios.Mempool.Connection do
         {:reconnect, initial_state}
       end
 
-      defp health_check(url) do
-        health_check_client =
-          Application.get_env(:xogmios, Xogmios.HealthCheck, [])
-          |> Keyword.get(:client, Xogmios.HealthCheck)
-
-        health_check_client.run(url)
-      end
-
-      defp acquire_mempool do
-        start_message = Messages.acquire_mempool()
-        :websocket_client.cast(self(), {:text, start_message})
-      end
-
       @impl true
       def onconnect(connection, state) do
         state = Map.put(state, :ws_pid, self())
 
-        with :ok <- health_check(state.url),
+        with :ok <- HealthCheck.run(state.url),
              :ok <- acquire_mempool() do
           case state.handler.handle_connect(state) do
             {:ok, new_state} ->

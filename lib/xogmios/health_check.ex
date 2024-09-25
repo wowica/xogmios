@@ -3,6 +3,9 @@ defmodule Xogmios.HealthCheck do
   Performs a health check against the Ogmios server's HTTP endpoint.
   Used primarily to determine if the underlying Cardano node is fully synced.
   """
+
+  @http_client :httpc
+
   @spec run(url :: String.t()) :: :ok | {:error, String.t()}
   def run(ogmios_url) do
     url = parse_url(ogmios_url)
@@ -11,7 +14,7 @@ defmodule Xogmios.HealthCheck do
     :inets.start()
     :ssl.start()
 
-    case :httpc.request(:get, {String.to_charlist(url), []}, [], []) do
+    case client().request(:get, {String.to_charlist(url), []}, [], []) do
       {:ok, {{_, status_code, _}, _headers, _body}} ->
         case status_code do
           200 -> :ok
@@ -21,6 +24,12 @@ defmodule Xogmios.HealthCheck do
       {:error, reason} ->
         {:error, "Error: #{inspect(reason)}"}
     end
+  end
+
+  defp client do
+    # Xogmios.HealthCheck.HTTPClientMock is used on test runs
+    Application.get_env(:xogmios, __MODULE__, [])
+    |> Keyword.get(:http_client, @http_client)
   end
 
   defp parse_url(url) do

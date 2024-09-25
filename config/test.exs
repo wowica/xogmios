@@ -1,3 +1,3 @@
 import Config
 
-config :xogmios, Xogmios.HealthCheck, client: Xogmios.HealthCheck.ClientMock
+config :xogmios, Xogmios.HealthCheck, http_client: Xogmios.HealthCheck.HTTPClientMock
