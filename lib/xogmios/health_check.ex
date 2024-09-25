@@ -15,10 +15,26 @@ defmodule Xogmios.HealthCheck do
     :ssl.start()
 
     case client().request(:get, {String.to_charlist(url), []}, [], []) do
-      {:ok, {{_, status_code, _}, _headers, _body}} ->
+      {:ok, {{_, status_code, _}, _headers, json_body}} ->
         case status_code do
-          200 -> :ok
-          _ -> {:error, "Received status code: #{status_code}"}
+          200 ->
+            :ok
+
+          202 ->
+            response_body = Jason.decode!(json_body)
+
+            progress =
+              response_body["networkSynchronization"]
+              |> Kernel.*(100)
+              |> Float.round(4)
+
+            {:incomplete, "Cardano Node not ready. Network sync progress at #{progress}%"}
+
+          _error_status_code ->
+            {:error,
+             """
+             Ogmios service error. Cardano Node not ready.
+             """}
         end
 
       {:error, reason} ->

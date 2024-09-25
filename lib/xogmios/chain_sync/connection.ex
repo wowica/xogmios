@@ -56,11 +56,18 @@ defmodule Xogmios.ChainSync.Connection do
               {:ok, state}
           end
         else
-          {:error, _reason} ->
+          {:error, reason} ->
+            Logger.error("""
+            Ogmios reported error: #{reason}\
+            Trying reconnection in 5 seconds.
+            """)
+
+            {:reconnect, 5_000, state}
+
+          {:incomplete, reason} ->
             Logger.warning("""
-            Ogmios is not yet ready to provide data. \
-            This is likely due to the underlying Cardano node not being fully synced. \
-            Trying again in 5 seconds.
+            #{reason} \
+            Trying reconnection in 5 seconds.
             """)
 
             {:reconnect, 5_000, state}
