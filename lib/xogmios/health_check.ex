@@ -10,10 +10,6 @@ defmodule Xogmios.HealthCheck do
   def run(ogmios_url) do
     url = parse_url(ogmios_url)
 
-    # NOTE: Investigate if there's a better way to start these.
-    :inets.start()
-    :ssl.start()
-
     case client().request(:get, {String.to_charlist(url), []}, [], []) do
       {:ok, {{_, status_code, _}, _headers, json_body}} ->
         case status_code do
