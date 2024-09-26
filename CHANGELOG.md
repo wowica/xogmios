@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Checks Ogmios server health prior to sending initial messages for ChainSync and Mempool. In case
-the underlying not is not yet ready or still syncinging with the network, it reports back status and
+the underlying node is not yet ready or still syncinging with the network, it reports back status and
 attempts a reconnection after 5 seconds.
 
 ## [v0.5.1](https://github.com/wowica/xogmios/releases/tag/v0.5.1) (2024-09-04)
