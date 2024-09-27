@@ -4,6 +4,7 @@ defmodule Xogmios.Mempool.Connection do
   for the Mempool protocol.
   """
 
+  alias Xogmios.HealthCheck
   alias Xogmios.Mempool.Messages
 
   defmacro __using__(_opts) do
@@ -25,6 +26,11 @@ defmodule Xogmios.Mempool.Connection do
         }
       end
 
+      defp acquire_mempool do
+        start_message = Messages.acquire_mempool()
+        :websocket_client.cast(self(), {:text, start_message})
+      end
+
       @impl true
       def init(state) do
         initial_state =
@@ -39,16 +45,31 @@ defmodule Xogmios.Mempool.Connection do
       def onconnect(connection, state) do
         state = Map.put(state, :ws_pid, self())
 
-        start_message = Messages.acquire_mempool()
-        :websocket_client.cast(self(), {:text, start_message})
-        send(state.notify_on_connect, {:connected, connection})
+        with :ok <- HealthCheck.run(state.url),
+             :ok <- acquire_mempool() do
+          case state.handler.handle_connect(state) do
+            {:ok, new_state} ->
+              {:ok, new_state}
 
-        case state.handler.handle_connect(state) do
-          {:ok, new_state} ->
-            {:ok, new_state}
+            _ ->
+              {:ok, state}
+          end
+        else
+          {:error, reason} ->
+            Logger.error("""
+            Ogmios reported error: #{reason}\
+            Trying reconnection in 5 seconds.
+            """)
 
-          _ ->
-            {:ok, state}
+            {:reconnect, 5_000, state}
+
+          {:incomplete, reason} ->
+            Logger.warning("""
+            #{reason} \
+            Trying reconnection in 5 seconds.
+            """)
+
+            {:reconnect, 5_000, state}
         end
       end
 

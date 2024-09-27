@@ -32,7 +32,7 @@ defmodule Xogmios.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger, :inets, :ssl, :crypto, :public_key, :asn1]
     ]
   end
 
@@ -50,7 +50,7 @@ defmodule Xogmios.MixProject do
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
       {:plug, "~> 1.15", only: :test},
       {:plug_cowboy, "~> 2.6", only: :test},
-      {:websocket_client, "~> 1.5"}
+      {:websocket_client, github: "caike/websocket_client", ref: "966daed"}
     ]
   end
 

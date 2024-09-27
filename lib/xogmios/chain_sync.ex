@@ -85,7 +85,7 @@ defmodule Xogmios.ChainSync do
   """
   @spec start_link(module(), start_options :: Keyword.t()) :: {:ok, pid()} | {:error, term()}
   def start_link(client, opts) do
-    {url, opts} = Keyword.pop(opts, :url)
+    url = Keyword.fetch!(opts, :url)
     {name, opts} = Keyword.pop(opts, :name, client)
 
     initial_state = Keyword.merge(opts, handler: client)
