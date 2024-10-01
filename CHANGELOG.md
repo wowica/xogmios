@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 the underlying node is not yet ready or still syncinging with the network, it reports back status and
 attempts a reconnection after 5 seconds.
 
+- Adds support for `:conway` to the `sync_from` option on ChainSync (mainnet only). This allows ChainSync
+clients to sync with the chain starting on the first block of the Conway era.
+
 ## [v0.5.1](https://github.com/wowica/xogmios/releases/tag/v0.5.1) (2024-09-04)
 
 ### Fixed
