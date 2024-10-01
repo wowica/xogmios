@@ -48,8 +48,8 @@ defmodule Xogmios do
 
   This option accepts either:
 
-  a) An atom from the list: `:origin`, `:byron`,
-  `:shelley`, `:allegra`, `:mary`, `:alonzo`, `:babbage`.
+  a) An atom from the following list of existing eras: `:origin`, `:byron`,
+  `:shelley`, `:allegra`, `:mary`, `:alonzo`, `:babbage`, `:conway`.
 
   For example:
 
@@ -61,7 +61,9 @@ defmodule Xogmios do
   end
   ```
 
-  This will sync with the chain starting from the first block of the Babbage era.
+  This will sync with the chain starting from the first block of the Babbage era. Passing
+  an atom to `sync_from` only works when connecting with **mainnet**. For testnet, `sync_from`
+  must receive a specific point in the chain as described below.
 
   b) A point in the chain, given its `slot` and `id`. For example:
 
@@ -104,7 +106,7 @@ defmodule Xogmios do
   `opts` as keyword lists are passed to the underlying :websocket_client.
 
   The `:include_details` flag can be used to determine the level of details
-  to be returned with each transaction as part of `c:Xogmios.Mempool.handle_transaction/2`.
+  to be returned with each transaction as part of `c:Xogmios.MempoolTxs.handle_transaction/2`.
 
   Setting this option to `false` (default) means only transaction id is returned:
 

@@ -118,7 +118,10 @@ defmodule Xogmios.ChainSync.Messages do
     allegra: {16_588_737, "4e9bbbb67e3ae262133d94c3da5bffce7b1127fc436e7433b87668dba34c354a"},
     mary: {23_068_793, "4e9bbbb67e3ae262133d94c3da5bffce7b1127fc436e7433b87668dba34c354a"},
     alonzo: {39_916_796, "e72579ff89dc9ed325b723a33624b596c08141c7bd573ecfff56a1f7229e4d09"},
-    babbage: {72_316_796, "c58a24ba8203e7629422a24d9dc68ce2ed495420bf40d9dab124373655161a20"}
+    babbage: {72_316_796, "c58a24ba8203e7629422a24d9dc68ce2ed495420bf40d9dab124373655161a20"},
+    # Last babbage https://cardanoscan.io/block/10781330
+    # First conway https://cardanoscan.io/block/10781331
+    conway: {133_660_799, "e757d57eb8dc9500a61c60a39fadb63d9be6973ba96ae337fd24453d4d15c343"}
   }
 
   @doc """
