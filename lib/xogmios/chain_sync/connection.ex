@@ -10,7 +10,7 @@ defmodule Xogmios.ChainSync.Connection do
 
   defmacro __using__(_opts) do
     quote do
-      @behaviour :websocket_client
+      @behaviour :banana_websocket_client
 
       require Logger
 
@@ -29,7 +29,7 @@ defmodule Xogmios.ChainSync.Connection do
 
       defp send_initial_sync_message do
         start_message = Messages.initial_sync()
-        :websocket_client.cast(self(), {:text, start_message})
+        :banana_websocket_client.cast(self(), {:text, start_message})
       end
 
       @impl true

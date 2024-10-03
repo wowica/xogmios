@@ -4,7 +4,7 @@ defmodule Xogmios.StateQuery.Server do
   # the WebSocket server. It acts as an synchronous interface for clients of Xogmios.StateQuery.
   # It uses GenServer.reply/2 to respond to GenServer.call/2 calls from Xogmios.StateQuery.send_query/2.
 
-  @behaviour :websocket_client
+  @behaviour :banana_websocket_client
 
   require Logger
 

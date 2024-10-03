@@ -3,7 +3,7 @@ defmodule Xogmios.MixProject do
 
   @description "An Elixir client for Ogmios"
   @source_url "https://github.com/wowica/xogmios"
-  @version "0.5.1"
+  @version "0.6.0"
 
   def project do
     [
@@ -50,7 +50,7 @@ defmodule Xogmios.MixProject do
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
       {:plug, "~> 1.15", only: :test},
       {:plug_cowboy, "~> 2.6", only: :test},
-      {:websocket_client, github: "caike/websocket_client", ref: "966daed"}
+      {:banana_websocket_client, "~> 0.0.2"}
     ]
   end
 
