@@ -9,7 +9,7 @@ defmodule Xogmios.Mempool.Connection do
 
   defmacro __using__(_opts) do
     quote do
-      @behaviour :websocket_client
+      @behaviour :banana_websocket_client
 
       require Logger
 
@@ -28,7 +28,7 @@ defmodule Xogmios.Mempool.Connection do
 
       defp acquire_mempool do
         start_message = Messages.acquire_mempool()
-        :websocket_client.cast(self(), {:text, start_message})
+        :banana_websocket_client.cast(self(), {:text, start_message})
       end
 
       @impl true

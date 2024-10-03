@@ -1,7 +1,7 @@
 defmodule Xogmios.TxSubmission.Server do
   @moduledoc false
 
-  @behaviour :websocket_client
+  @behaviour :banana_websocket_client
 
   require Logger
 

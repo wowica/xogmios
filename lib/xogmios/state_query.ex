@@ -98,7 +98,7 @@ defmodule Xogmios.StateQuery do
         url = Keyword.fetch!(args, :url)
         initial_state = [notify_on_connect: self()]
 
-        case :websocket_client.start_link(url, Server, initial_state) do
+        case :banana_websocket_client.start_link(url, Server, initial_state) do
           {:ok, ws_pid} ->
             # Blocks until the connection with the Ogmios server
             # is established or until timeout is reached.
@@ -119,7 +119,7 @@ defmodule Xogmios.StateQuery do
       @impl true
       def handle_call({:send_message, message}, from, state) do
         {:store_caller, _from} = send(state.ws_pid, {:store_caller, from})
-        :ok = :websocket_client.send(state.ws_pid, {:text, message})
+        :ok = :banana_websocket_client.send(state.ws_pid, {:text, message})
         {:noreply, state}
       end
     end

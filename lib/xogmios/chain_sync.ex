@@ -76,7 +76,7 @@ defmodule Xogmios.ChainSync do
   @keepalive_in_ms 5_000
 
   # The websocket client library
-  @client :websocket_client
+  @client :banana_websocket_client
 
   @doc """
   Starts a new Chain Sync process linked to the current process.
@@ -157,7 +157,7 @@ defmodule Xogmios.ChainSync do
     end)
 
     next_block_message = Xogmios.ChainSync.Messages.next_block()
-    :websocket_client.cast(ws_pid, {:text, next_block_message})
+    :banana_websocket_client.cast(ws_pid, {:text, next_block_message})
 
     receive do
       {:ok, next_block} -> {:ok, next_block}

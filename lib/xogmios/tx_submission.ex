@@ -78,7 +78,7 @@ defmodule Xogmios.TxSubmission do
       def init(args) do
         url = Keyword.fetch!(args, :url)
 
-        case :websocket_client.start_link(url, Server, []) do
+        case :banana_websocket_client.start_link(url, Server, []) do
           {:ok, ws_pid} ->
             {:ok, %{ws_pid: ws_pid, response: nil, caller: nil}}
 
@@ -90,7 +90,7 @@ defmodule Xogmios.TxSubmission do
       @impl true
       def handle_call({:send, message}, from, state) do
         {:store_caller, _from} = send(state.ws_pid, {:store_caller, from})
-        :ok = :websocket_client.send(state.ws_pid, {:text, message})
+        :ok = :banana_websocket_client.send(state.ws_pid, {:text, message})
         {:noreply, state}
       end
     end

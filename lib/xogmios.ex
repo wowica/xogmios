@@ -103,7 +103,7 @@ defmodule Xogmios do
   @doc """
   Starts a new MempoolTxs (Transactions) process linked to the current process.
 
-  `opts` as keyword lists are passed to the underlying :websocket_client.
+  `opts` as keyword lists are passed to the underlying :banana_websocket_client.
 
   The `:include_details` flag can be used to determine the level of details
   to be returned with each transaction as part of `c:Xogmios.MempoolTxs.handle_transaction/2`.

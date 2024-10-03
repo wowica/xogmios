@@ -67,7 +67,7 @@ defmodule Xogmios.MempoolTxs do
   @keepalive_in_ms 5_000
 
   # The websocket client library
-  @client :websocket_client
+  @client :banana_websocket_client
 
   @doc """
   Starts a new Mempool process linked to the current process.
