@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/hexpm/v/xogmios.svg)](https://hex.pm/packages/xogmios)
 
 <p align="center">
-  <img src="assets/logo.jpg" alt="Xogmios" width="250">
+  <img src="assets/logo.jpg" alt="Xogmios" width="400">
 </p>
 
 
