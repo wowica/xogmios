@@ -3,8 +3,12 @@
 ![CI Status](https://github.com/wowica/xogmios/actions/workflows/ci.yml/badge.svg)
 [![Version](https://img.shields.io/hexpm/v/xogmios.svg)](https://hex.pm/packages/xogmios)
 
-[Docs](https://hexdocs.pm/xogmios/)
+<p align="center">
+  <img src="assets/logo.jpg" alt="Xogmios" width="400">
+</p>
 
+
+📖 [Documentation](https://hexdocs.pm/xogmios/)
 
 Xogmios is an Elixir client for the Cardano blockchain. You can use it to perform queries, stream blocks as they become available and submit transactions to the network.
 

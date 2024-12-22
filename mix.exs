@@ -68,7 +68,8 @@ defmodule Xogmios.MixProject do
       main: "readme",
       name: "Xogmios",
       source_url: @source_url,
-      extras: ["README.md"]
+      extras: ["README.md"],
+      assets: %{"assets" => "assets"}
     ]
   end
 end
