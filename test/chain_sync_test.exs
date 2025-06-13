@@ -150,4 +150,30 @@ defmodule Xogmios.ChainSyncTest do
     assert point["slot"]
     assert_receive :after_rollback
   end
+
+  defmodule DummyClientWithTip do
+    use Xogmios, :chain_sync
+
+    def start_link(opts) do
+      Xogmios.start_chain_sync_link(__MODULE__, opts)
+    end
+
+    @impl true
+    def handle_block(block, state) do
+      send(state.test_handler, {:handle_block, block})
+      {:close, state}
+    end
+  end
+
+  test "block includes current tip information" do
+    pid = start_supervised!({DummyClientWithTip, url: @ws_url, test_handler: self()})
+    assert is_pid(pid)
+
+    assert_receive {:handle_block, block}
+    assert is_map(block)
+    assert Map.has_key?(block, "current_tip")
+    assert is_map(block["current_tip"])
+    assert Map.has_key?(block["current_tip"], "id")
+    assert Map.has_key?(block["current_tip"], "slot")
+  end
 end

@@ -22,7 +22,11 @@ defmodule ChainSync.TestHandler do
         payload =
           Jason.encode!(%{
             "method" => "nextBlock",
-            "result" => %{"direction" => "forward", "block" => %{"height" => 123}}
+            "result" => %{
+              "direction" => "forward",
+              "block" => %{"height" => 123},
+              "tip" => %{"id" => "abc123", "slot" => 123}
+            }
           })
 
         Process.put(:counter, current_counter + 1)
@@ -43,7 +47,8 @@ defmodule ChainSync.TestHandler do
               "method" => "nextBlock",
               "result" => %{
                 "direction" => "forward",
-                "block" => %{"height" => 456}
+                "block" => %{"height" => 456},
+                "tip" => %{"id" => "abc123", "slot" => 123}
               }
             })
           end
