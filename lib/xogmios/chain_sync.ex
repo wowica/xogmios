@@ -146,43 +146,66 @@ defmodule Xogmios.ChainSync do
     end
   end
 
-  @doc """
-  Issues a synchronous message for reading the next block.
-  Potentially useful for building chain indexers with support for backpressure mechanism.
+  def call(pid, message) do
+    case get_ws_pid(pid) do
+      {:ok, ws_pid} ->
+        ref = make_ref()
+        send(ws_pid, {message, self(), ref})
 
-  > #### Warning {: .warning}
-  >
-  > This is a highly experimental function and should not be relied on just yet.
-  """
-  @spec read_next_block(pid()) :: {:ok, block :: map()} | :error
-  def read_next_block(pid) do
-    # hacky af but it does the job for now
+        receive do
+          {:ok, response} ->
+            {:ok, response}
 
-    state = :sys.get_state(pid)
+          {:error, reason} ->
+            {:error, reason}
+        after
+          5_000 -> {:error, :timeout}
+        end
 
-    {_c, %{ws_pid: ws_pid}} = state |> elem(1) |> elem(5)
+      error ->
+        Logger.error("Error finding ChainSync process: #{inspect(error)}")
+        error
+    end
+  end
 
-    caller = self()
+  defp get_ws_pid(pid) when is_pid(pid) do
+    {:ok, pid}
+  end
 
-    :sys.replace_state(pid, fn current_state ->
-      {:connected, {:context, req, transport, empty_list, ws, {module, client_info}, _, _, _}} =
-        current_state
+  defp get_ws_pid(client) do
+    case build_process_name(client) do
+      {:ok, {:local, name}} ->
+        case Process.whereis(name) do
+          nil ->
+            {:error, :process_not_found}
 
-      updated_client_info = Map.put(client_info, :caller, caller)
+          pid ->
+            {:ok, pid}
+        end
 
-      {:connected,
-       {:context, req, transport, empty_list, ws, {module, updated_client_info}, "", true, 0}}
-    end)
+      {:ok, {:global, name}} ->
+        case :global.whereis_name(name) do
+          :undefined ->
+            Logger.debug("Global process not found for name: #{inspect(name)}")
+            {:error, :process_not_found}
 
-    next_block_message = Xogmios.ChainSync.Messages.next_block()
-    :banana_websocket_client.cast(ws_pid, {:text, next_block_message})
+          pid ->
+            {:ok, pid}
+        end
 
-    receive do
-      {:ok, next_block} -> {:ok, next_block}
-    after
-      500 ->
-        Logger.warning("No immediate response from Ogmios. Likely waiting for a new block.")
-        {:error, :new_block_timeout}
+      {:ok, {:via, registry, {name, id}}} ->
+        case registry.lookup(name, id) do
+          [{pid, nil}] ->
+            {:ok, pid}
+
+          _ ->
+            Logger.debug("Via process not found.")
+            {:error, :process_not_found}
+        end
+
+      error ->
+        Logger.debug("Error building process name: #{inspect(error)}")
+        error
     end
   end
 
@@ -242,7 +265,7 @@ defmodule Xogmios.ChainSync do
       # to roll backward to that intersection point. This is because it is
       # possible to provide many points when looking for an intersection and
       # the protocol makes sure that both the node and the client are in sync.
-      # This allows clients applications to be somewhat “dumb” and blindly
+      # This allows clients applications to be somewhat "dumb" and blindly
       # follow instructions from the node."
       def handle_message(
             %{
