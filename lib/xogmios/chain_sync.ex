@@ -174,39 +174,38 @@ defmodule Xogmios.ChainSync do
   end
 
   defp get_ws_pid(client) do
-    case build_process_name(client) do
-      {:ok, {:local, name}} ->
-        case Process.whereis(name) do
-          nil ->
-            {:error, :process_not_found}
-
-          pid ->
-            {:ok, pid}
-        end
-
-      {:ok, {:global, name}} ->
-        case :global.whereis_name(name) do
-          :undefined ->
-            Logger.debug("Global process not found for name: #{inspect(name)}")
-            {:error, :process_not_found}
-
-          pid ->
-            {:ok, pid}
-        end
-
-      {:ok, {:via, registry, {name, id}}} ->
-        case registry.lookup(name, id) do
-          [{pid, nil}] ->
-            {:ok, pid}
-
-          _ ->
-            Logger.debug("Via process not found.")
-            {:error, :process_not_found}
-        end
+    with {:ok, process_name} <- build_process_name(client),
+         {:ok, pid} <- lookup_process(process_name) do
+      {:ok, pid}
+    else
+      {:error, :process_not_found} = error ->
+        Logger.debug("Process not found")
+        error
 
       error ->
         Logger.debug("Error building process name: #{inspect(error)}")
         error
+    end
+  end
+
+  defp lookup_process({:local, name}) do
+    case Process.whereis(name) do
+      nil -> {:error, :process_not_found}
+      pid -> {:ok, pid}
+    end
+  end
+
+  defp lookup_process({:global, name}) do
+    case :global.whereis_name(name) do
+      :undefined -> {:error, :process_not_found}
+      pid -> {:ok, pid}
+    end
+  end
+
+  defp lookup_process({:via, registry, {name, id}}) do
+    case registry.lookup(name, id) do
+      [{pid, nil}] -> {:ok, pid}
+      _ -> {:error, :process_not_found}
     end
   end
 
