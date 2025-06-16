@@ -71,6 +71,24 @@ defmodule Xogmios.ChainSync do
               | {:ok, new_state}
             when reason: String.t(), state: term(), new_state: term()
 
+  @doc """
+  Invoked when a message is sent to the process. This callback is optional.
+
+  Returning `{:ok, :next_block, new_state}` will request the next block once
+  it's made available.
+
+  Returning `{:ok, new_state}` will not request anymore blocks.
+
+  Returning `{:close, new_state}` will close the connection to the server.
+  """
+  @callback handle_info(message :: term(), state) ::
+              {:ok, :next_block, new_state}
+              | {:ok, new_state}
+              | {:close, new_state}
+            when state: term(), new_state: term()
+
+  @optional_callbacks handle_info: 2
+
   # The keepalive option is used to maintain the connection active.
   # This is important because proxies might close idle connections after a few seconds.
   @keepalive_in_ms 5_000

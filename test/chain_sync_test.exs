@@ -176,4 +176,70 @@ defmodule Xogmios.ChainSyncTest do
     assert Map.has_key?(block["current_tip"], "id")
     assert Map.has_key?(block["current_tip"], "slot")
   end
+
+  defmodule DummyClientWithInfo do
+    use Xogmios, :chain_sync
+
+    def start_link(opts) do
+      Xogmios.start_chain_sync_link(__MODULE__, opts)
+    end
+
+    @impl true
+    def handle_block(_block, state) do
+      send(state.test_handler, :handle_block)
+      {:ok, state}
+    end
+
+    @impl true
+    def handle_info(:request_next_block, state) do
+      send(state.test_handler, :handle_info_request_next)
+      {:ok, :next_block, state}
+    end
+
+    @impl true
+    def handle_info(:just_ok, state) do
+      send(state.test_handler, :handle_info_just_ok)
+      {:ok, state}
+    end
+
+    @impl true
+    def handle_info(:close_connection, state) do
+      send(state.test_handler, :handle_info_close)
+      {:close, state}
+    end
+  end
+
+  describe "handle_info/2 callback" do
+    test "returns :next_block to request next block" do
+      pid = start_supervised!({DummyClientWithInfo, url: @ws_url, test_handler: self()})
+      assert is_pid(pid)
+
+      send(pid, :request_next_block)
+      assert_receive :handle_info_request_next
+      # Verify process is still alive after requesting next block
+      assert Process.alive?(pid)
+    end
+
+    test "returns :ok to stop requesting blocks" do
+      pid = start_supervised!({DummyClientWithInfo, url: @ws_url, test_handler: self()})
+      assert is_pid(pid)
+
+      send(pid, :just_ok)
+      assert_receive :handle_info_just_ok
+      # Verify process is still alive after just ok
+      assert Process.alive?(pid)
+    end
+
+    test "returns :close to terminate connection" do
+      pid = start_supervised!({DummyClientWithInfo, url: @ws_url, test_handler: self()})
+      assert is_pid(pid)
+
+      send(pid, :close_connection)
+      assert_receive :handle_info_close
+      # Give process time to terminate
+      Process.sleep(100)
+      # Verify process is terminated
+      refute Process.alive?(pid)
+    end
+  end
 end
