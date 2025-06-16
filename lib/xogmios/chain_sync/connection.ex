@@ -109,8 +109,27 @@ defmodule Xogmios.ChainSync.Connection do
       end
 
       @impl true
-      def websocket_info(_any, _arg1, state) do
-        {:ok, state}
+      def websocket_info(message, _conn, state) do
+        if function_exported?(state.handler, :handle_info, 2) do
+          case state.handler.handle_info(message, state) do
+            {:ok, :next_block, new_state} ->
+              message = Messages.next_block()
+              {:reply, {:text, message}, new_state}
+
+            {:ok, new_state} ->
+              {:ok, new_state}
+
+            {:close, new_state} ->
+              {:close, "finished", new_state}
+
+            response ->
+              Logger.warning("Invalid response from handle_info: #{inspect(response)}")
+              {:ok, state}
+          end
+        else
+          Logger.warning("Unhandled info message #{inspect(message)}")
+          {:ok, state}
+        end
       end
 
       @impl true
