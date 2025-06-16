@@ -13,37 +13,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- New `Xogmios.ChainSync.call/2` function to send synchronous messages to the ChainSync process. Example:
+
+  ```elixir
+  defmodule ChainSyncBlockCounter do
+    use Xogmios, :chain_sync
+
+    def start_link(opts) do
+      initial_state = [block_count: 0, sync_from: :origin]
+      opts = Keyword.merge(opts, initial_state)
+      Xogmios.start_chain_sync_link(__MODULE__, opts)
+    end
+
+    # Returns the current number of blocks synced
+    def get_block_count(pid \\ __MODULE__) do
+      # Data is pulled, as it's returned to the 
+      # caller of `ChainSyncBlockCounter.get_block_count/1`
+      Xogmios.ChainSync.call(pid, :get_block_count)
+    end
+
+    @impl true
+    def handle_info({:get_block_count, caller, _ref}, state) do
+      send(caller, {:ok, state.block_count})
+      {:ok, state}
+    end
+
+    @impl true
+    def handle_block(_block, %{block_count: block_count} = state) do
+      # Data is pushed, like `Indexer.push(block)`
+      {:ok, :next_block, %{state | block_count: block_count + 1}}
+    end
+  end
+  ```
+
 - Current tip information is now included in the block data passed to `handle_block/2` under the `current_tip` key. This allows clients to calculate the time needed for chainsync to sync from the current position. Adding this to the existing block for now to quickly enable other features, but we should consider implementing a new callback (like `handle_forward/2`) to better handle a new top level entity with both "block" and "tip" as properties. Example of a match for when the client is synced with the current tip (note the repeating `slot` variable name):
 
-```elixir
-@impl true
-def handle_block(
-  %{
-    "slot" => slot,
-    "current_tip" => %{"slot" => slot},
-  } = block,
-  state
-) do
-  # ... process the block
-  {:ok, :next_block, state}
-end
-```
+  ```elixir
+  @impl true
+  def handle_block(
+    %{
+      "slot" => slot,
+      "current_tip" => %{"slot" => slot},
+    } = block,
+    state
+  ) do
+    # ... process the block
+    {:ok, :next_block, state}
+  end
+  ```
 
 - New syntax for setting an intersection point on `ChainSync`:
 
-  ```
+  ```elixir
   sync_from: {slot, block_hash}
   ```
 
 ### Deprecated
 
-- The following syntax for setting an intersection point on `ChainSync` is deprecated:
+- The following syntax for setting an intersection point on `ChainSync` is now deprecated:
 
-  ```
+  ```elixir
   sync_from: %{
     point: %{slot: slot, id: block_hash}
   }
   ```
+- Optional `handle_info/2` callback for ChainSync clients. This allows handling of arbitrary
+messages sent to the ChainSync process, with support for requesting next blocks, stopping block
+requests, or closing the connection.
+
 ### Removed
 
 - Removed `read_next_block/1` function from ChainSync. This function was a failed attempt at sending synchronous messages to ChainSync.
