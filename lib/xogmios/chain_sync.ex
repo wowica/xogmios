@@ -128,44 +128,6 @@ defmodule Xogmios.ChainSync do
     end
   end
 
-  @doc """
-  Issues a synchronous message for reading the next block.
-  Potentially useful for building chain indexers with support for backpressure mechanism.
-
-  > #### Warning {: .warning}
-  >
-  > This is a highly experimental function and should not be relied on just yet.
-  """
-  @spec read_next_block(pid()) :: {:ok, block :: map()} | :error
-  def read_next_block(pid) do
-    # hacky af but it does the job for now
-
-    state = :sys.get_state(pid)
-
-    {_c, %{ws_pid: ws_pid}} = state |> elem(1) |> elem(5)
-
-    caller = self()
-
-    :sys.replace_state(pid, fn current_state ->
-      {:connected, {:context, req, transport, empty_list, ws, {module, client_info}, _, _, _}} =
-        current_state
-
-      updated_client_info = Map.put(client_info, :caller, caller)
-
-      {:connected,
-       {:context, req, transport, empty_list, ws, {module, updated_client_info}, "", true, 0}}
-    end)
-
-    next_block_message = Xogmios.ChainSync.Messages.next_block()
-    :banana_websocket_client.cast(ws_pid, {:text, next_block_message})
-
-    receive do
-      {:ok, next_block} -> {:ok, next_block}
-    after
-      5_000 -> :error
-    end
-  end
-
   defmacro __using__(_opts) do
     quote do
       @behaviour Xogmios.ChainSync
