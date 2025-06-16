@@ -269,7 +269,18 @@ defmodule Xogmios.ChainSync do
           send(caller, {:ok, result["block"]})
           {:ok, state}
         else
-          case state.handler.handle_block(result["block"], state) do
+          #
+          # Add current tip to the block to allow calculating time for chainsync
+          # to sync from the caller.
+          #
+          # Adding this to the existing block for now to avoid breaking changes
+          # but we should consider implementing a new callback to better
+          # handle a new top level entity with both "block" and "tip" as properties.
+          #
+          %{"block" => block, "tip" => tip} = result
+          block_with_tip = Map.put(block, "current_tip", tip)
+
+          case state.handler.handle_block(block_with_tip, state) do
             {:ok, :next_block, new_state} ->
               message = Messages.next_block()
               {:reply, {:text, message}, new_state}

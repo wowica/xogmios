@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Current tip information is now included in the block data passed to `handle_block/2` under the `current_tip` key. This allows clients to calculate the time needed for chainsync to sync from the current position. Adding this to the existing block for now to quickly enable other features, but we should consider implementing a new callback (like `handle_forward/2`) to better handle a new top level entity with both "block" and "tip" as properties.
+
 ## [v0.6.1](https://github.com/wowica/xogmios/releases/tag/v0.6.1) (2024-12-22)
 
 ### Fixed
