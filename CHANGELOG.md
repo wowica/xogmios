@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Current tip information is now included in the block data passed to `handle_block/2`. This allows clients to calculate the time needed for chainsync to sync from the current position.
 
+- Support for `Xogmios.ChainSync.call/2` to send messages to the ChainSync process.
+
+### Removed
+
+- Removed the experimental `read_next_block/1` function from ChainSync. This function was marked as experimental and has been removed in favor of the new `handle_info/2` callback which provides a more flexible and maintainable way to manually handle block requests.
 
 ## [v0.6.1](https://github.com/wowica/xogmios/releases/tag/v0.6.1) (2024-12-22)
 
