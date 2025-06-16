@@ -179,11 +179,11 @@ defmodule Xogmios.ChainSync do
       {:ok, pid}
     else
       {:error, :process_not_found} = error ->
-        Logger.debug("Process not found")
+        Logger.error("Process not found")
         error
 
       error ->
-        Logger.debug("Error building process name: #{inspect(error)}")
+        Logger.error("Error building process name: #{inspect(error)}")
         error
     end
   end
