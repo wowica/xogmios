@@ -162,7 +162,9 @@ defmodule Xogmios.ChainSync do
     receive do
       {:ok, next_block} -> {:ok, next_block}
     after
-      5_000 -> :error
+      500 ->
+        Logger.warning("No immediate response from Ogmios. Likely waiting for a new block.")
+        {:error, :new_block_timeout}
     end
   end
 
