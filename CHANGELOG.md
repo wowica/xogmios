@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Optional `handle_info/2` callback for ChainSync clients. This allows handling of arbitrary messages sent to the ChainSync process, with support for requesting next blocks, stopping block requests, or closing the connection.
+
+- Current tip information is now included in the block data passed to `handle_block/2`. This allows clients to calculate the time needed for chainsync to sync from the current position.
+
+
 ## [v0.6.1](https://github.com/wowica/xogmios/releases/tag/v0.6.1) (2024-12-22)
 
 ### Fixed
