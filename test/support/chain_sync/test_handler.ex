@@ -60,6 +60,11 @@ defmodule ChainSync.TestHandler do
   end
 
   @impl true
+  def websocket_handle(_message, state) do
+    {:ok, state}
+  end
+
+  @impl true
   def terminate(_arg1, _arg2, _arg3) do
     :ok
   end

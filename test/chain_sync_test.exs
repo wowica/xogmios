@@ -1,5 +1,6 @@
 defmodule Xogmios.ChainSyncTest do
   use ExUnit.Case
+  import ExUnit.CaptureLog
 
   @ws_url TestServer.get_url()
 
@@ -240,6 +241,112 @@ defmodule Xogmios.ChainSyncTest do
       Process.sleep(100)
       # Verify process is terminated
       refute Process.alive?(pid)
+    end
+  end
+
+  defmodule DummyClientWithCall do
+    use Xogmios, :chain_sync
+
+    def start_link(opts) do
+      Xogmios.start_chain_sync_link(__MODULE__, opts)
+    end
+
+    @impl true
+    def handle_block(_block, state) do
+      send(state.test_handler, :handle_block)
+      {:ok, state}
+    end
+
+    @impl true
+    def handle_info({:test_message, caller, _ref}, state) do
+      send(caller, {:ok, "test_response"})
+      {:ok, state}
+    end
+
+    @impl true
+    def handle_info({:error_message, caller, _ref}, state) do
+      send(caller, {:error, "test_error"})
+      {:ok, state}
+    end
+
+    @impl true
+    def handle_info({:timeout_message, _caller, _ref}, state) do
+      # Don't respond to simulate timeout
+      {:ok, state}
+    end
+  end
+
+  describe "call/2" do
+    test "successfully calls process and receives response" do
+      pid = start_supervised!({DummyClientWithCall, url: @ws_url, test_handler: self()})
+      assert is_pid(pid)
+
+      assert {:ok, "test_response"} = Xogmios.ChainSync.call(pid, :test_message)
+    end
+
+    test "handles error responses" do
+      pid = start_supervised!({DummyClientWithCall, url: @ws_url, test_handler: self()})
+      assert is_pid(pid)
+
+      assert {:error, "test_error"} = Xogmios.ChainSync.call(pid, :error_message)
+    end
+
+    test "times out after 5 seconds" do
+      pid = start_supervised!({DummyClientWithCall, url: @ws_url, test_handler: self()})
+      assert is_pid(pid)
+
+      assert {:error, :timeout} = Xogmios.ChainSync.call(pid, :timeout_message)
+    end
+
+    test "handles process not found error" do
+      assert capture_log(fn ->
+               assert {:error, :process_not_found} =
+                        Xogmios.ChainSync.call(:nonexistent_process, :test_message)
+             end) =~ "Error finding ChainSync process"
+    end
+
+    test "works with named processes" do
+      opts = [url: @ws_url, test_handler: self(), name: :named_call_test]
+      pid = start_supervised!({DummyClientWithCall, opts})
+      assert is_pid(pid)
+
+      assert {:ok, "test_response"} = Xogmios.ChainSync.call(:named_call_test, :test_message)
+    end
+
+    test "works with global named processes" do
+      opts = [
+        url: @ws_url,
+        test_handler: self(),
+        name: {:global, :global_call_test}
+      ]
+
+      pid = start_supervised!({DummyClientWithCall, opts})
+      assert is_pid(pid)
+
+      assert {:ok, "test_response"} =
+               Xogmios.ChainSync.call({:global, :global_call_test}, :test_message)
+    end
+
+    test "works with via registry processes" do
+      opts = [
+        url: @ws_url,
+        test_handler: self(),
+        name: {:via, Registry, {CallTestRegistry, :via_call_test}}
+      ]
+
+      _registry_pid = start_supervised!({Registry, keys: :unique, name: CallTestRegistry})
+
+      pid = start_supervised!({DummyClientWithCall, opts})
+      assert is_pid(pid)
+      assert Process.info(pid)[:registered_name] == nil
+
+      assert [{^pid, nil}] = Registry.lookup(CallTestRegistry, :via_call_test)
+
+      assert {:ok, "test_response"} =
+               Xogmios.ChainSync.call(
+                 {:via, Registry, {CallTestRegistry, :via_call_test}},
+                 :test_message
+               )
     end
   end
 end

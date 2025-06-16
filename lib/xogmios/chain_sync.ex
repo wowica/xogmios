@@ -116,6 +116,34 @@ defmodule Xogmios.ChainSync do
     end
   end
 
+  @doc """
+  Sends a message to the ChainSync process.
+  This function is useful to send messages to the ChainSync process from outside
+  of the ChainSync module. The message should be handled by a matching `c:handle_info/2` callback.
+  """
+  @spec call(pid(), term()) :: {:ok, term()} | {:error, term()}
+  def call(pid, message) do
+    case get_ws_pid(pid) do
+      {:ok, ws_pid} ->
+        ref = make_ref()
+        send(ws_pid, {message, self(), ref})
+
+        receive do
+          {:ok, response} ->
+            {:ok, response}
+
+          {:error, reason} ->
+            {:error, reason}
+        after
+          5_000 -> {:error, :timeout}
+        end
+
+      error ->
+        Logger.error("Error finding ChainSync process: #{inspect(error)}")
+        error
+    end
+  end
+
   defp start_link(name, url, client, state) do
     @client.start_link(name, url, client, state, keepalive: @keepalive_in_ms)
   end
@@ -138,6 +166,47 @@ defmodule Xogmios.ChainSync do
         # Returns error if name does not comply with
         # values accepted by the websocket client library
         {:error, :invalid_process_name}
+    end
+  end
+
+  defp get_ws_pid(pid) when is_pid(pid) do
+    {:ok, pid}
+  end
+
+  defp get_ws_pid(client) do
+    case build_process_name(client) do
+      {:ok, {:local, name}} ->
+        case Process.whereis(name) do
+          nil ->
+            {:error, :process_not_found}
+
+          pid ->
+            {:ok, pid}
+        end
+
+      {:ok, {:global, name}} ->
+        case :global.whereis_name(name) do
+          :undefined ->
+            Logger.debug("Global process not found for name: #{inspect(name)}")
+            {:error, :process_not_found}
+
+          pid ->
+            {:ok, pid}
+        end
+
+      {:ok, {:via, registry, {name, id}}} ->
+        case registry.lookup(name, id) do
+          [{pid, nil}] ->
+            {:ok, pid}
+
+          _ ->
+            Logger.debug("Via process not found.")
+            {:error, :process_not_found}
+        end
+
+      error ->
+        Logger.debug("Error building process name: #{inspect(error)}")
+        error
     end
   end
 
