@@ -109,8 +109,18 @@ defmodule Xogmios.ChainSync.Connection do
       end
 
       @impl true
-      def websocket_info(_any, _arg1, state) do
-        {:ok, state}
+      def websocket_info(message, _arg1, state) do
+        if function_exported?(state.handler, :handle_info, 2) do
+          # TODO: Attempt to allow the handler to handle info messages
+          # This is likely a symptom of the process design not being correct.
+          # Ideally the handler module should comply with a GensServer interface and
+          # be able to handle info messages by itself.
+          Logger.warning("handler handle_info function called with #{inspect(message)}")
+          {:ok, state}
+        else
+          Logger.warning("Unhandled info message #{inspect(message)}")
+          {:ok, state}
+        end
       end
 
       @impl true
