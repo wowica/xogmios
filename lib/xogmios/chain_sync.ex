@@ -138,9 +138,9 @@ defmodule Xogmios.ChainSync do
           5_000 -> {:error, :timeout}
         end
 
-      error ->
+      {:error, error} ->
         Logger.error("Error finding ChainSync process: #{inspect(error)}")
-        error
+        {:error, error}
     end
   end
 
