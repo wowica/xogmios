@@ -313,6 +313,13 @@ defmodule Xogmios.ChainSyncTest do
       assert {:ok, "test_response"} = Xogmios.ChainSync.call(:named_call_test, :test_message)
     end
 
+    test "handles invalid process name error" do
+      assert capture_log(fn ->
+               assert {:error, :invalid_process_name} =
+                        Xogmios.ChainSync.call("invalid process name", :test_message)
+             end) =~ "Invalid process name"
+    end
+
     test "works with global named processes" do
       opts = [
         url: @ws_url,

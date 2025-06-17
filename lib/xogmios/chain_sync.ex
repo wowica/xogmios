@@ -182,8 +182,8 @@ defmodule Xogmios.ChainSync do
         Logger.error("Process not found")
         error
 
-      error ->
-        Logger.error("Error building process name: #{inspect(error)}")
+      {:error, :invalid_process_name} = error ->
+        Logger.error("Invalid process name: #{inspect(error)}")
         error
     end
   end
