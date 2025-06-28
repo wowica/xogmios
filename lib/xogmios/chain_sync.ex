@@ -191,7 +191,21 @@ defmodule Xogmios.ChainSync do
               # No option passed, sync with current tip
               Messages.find_intersection(tip["slot"], tip["id"])
 
-            %{point: point} ->
+            {slot, block_hash} ->
+              Messages.find_intersection(slot, block_hash)
+
+            %{point: point} when is_map(point) ->
+              Logger.warning(
+                "\nThe following syntax is deprecated:\n\n" <>
+                  "sync_from: %{\n" <>
+                  "  point: %{\n" <>
+                  "    slot: #{point.slot},\n" <>
+                  "    id: #{point.id}\n" <>
+                  "  }\n" <>
+                  "}\n\nTo set an intersection point use a tuple as follows:\n\n" <>
+                  "  sync_from: {#{point.slot}, #{point.id}}\n"
+              )
+
               # Sync with a specific point
               Messages.find_intersection(point.slot, point.id)
 
