@@ -71,6 +71,19 @@ defmodule Xogmios.ChainSync do
               | {:ok, new_state}
             when reason: String.t(), state: term(), new_state: term()
 
+  @doc """
+  Invoked when a message is sent to the process. This callback is optional.
+
+  Return type is the same as `c:handle_block/2` and `c:handle_rollback/2`.
+  """
+  @callback handle_info(message :: term(), state) ::
+              {:ok, :next_block, new_state}
+              | {:ok, new_state}
+              | {:close, new_state}
+            when state: term(), new_state: term()
+
+  @optional_callbacks handle_info: 2
+
   # The keepalive option is used to maintain the connection active.
   # This is important because proxies might close idle connections after a few seconds.
   @keepalive_in_ms 5_000
@@ -103,6 +116,34 @@ defmodule Xogmios.ChainSync do
     end
   end
 
+  @doc """
+  Sends a message to the ChainSync process.
+  This function is useful to send messages to the ChainSync process from outside
+  of the ChainSync module. The message should be handled by a matching `c:handle_info/2` callback.
+  """
+  @spec call(pid(), term()) :: {:ok, term()} | {:error, term()}
+  def call(pid, message) do
+    case get_ws_pid(pid) do
+      {:ok, ws_pid} ->
+        ref = make_ref()
+        send(ws_pid, {message, self(), ref})
+
+        receive do
+          {:ok, response} ->
+            {:ok, response}
+
+          {:error, reason} ->
+            {:error, reason}
+        after
+          5_000 -> {:error, :timeout}
+        end
+
+      {:error, error} ->
+        Logger.error("Error finding ChainSync process: #{inspect(error)}")
+        {:error, error}
+    end
+  end
+
   defp start_link(name, url, client, state) do
     @client.start_link(name, url, client, state, keepalive: @keepalive_in_ms)
   end
@@ -128,41 +169,43 @@ defmodule Xogmios.ChainSync do
     end
   end
 
-  @doc """
-  Issues a synchronous message for reading the next block.
-  Potentially useful for building chain indexers with support for backpressure mechanism.
+  defp get_ws_pid(pid) when is_pid(pid) do
+    {:ok, pid}
+  end
 
-  > #### Warning {: .warning}
-  >
-  > This is a highly experimental function and should not be relied on just yet.
-  """
-  @spec read_next_block(pid()) :: {:ok, block :: map()} | :error
-  def read_next_block(pid) do
-    # hacky af but it does the job for now
+  defp get_ws_pid(client) do
+    with {:ok, process_name} <- build_process_name(client),
+         {:ok, pid} <- lookup_process(process_name) do
+      {:ok, pid}
+    else
+      {:error, :process_not_found} = error ->
+        Logger.error("Process not found")
+        error
 
-    state = :sys.get_state(pid)
+      {:error, :invalid_process_name} = error ->
+        Logger.error("Invalid process name: #{inspect(error)}")
+        error
+    end
+  end
 
-    {_c, %{ws_pid: ws_pid}} = state |> elem(1) |> elem(5)
+  defp lookup_process({:local, name}) do
+    case Process.whereis(name) do
+      nil -> {:error, :process_not_found}
+      pid -> {:ok, pid}
+    end
+  end
 
-    caller = self()
+  defp lookup_process({:global, name}) do
+    case :global.whereis_name(name) do
+      :undefined -> {:error, :process_not_found}
+      pid -> {:ok, pid}
+    end
+  end
 
-    :sys.replace_state(pid, fn current_state ->
-      {:connected, {:context, req, transport, empty_list, ws, {module, client_info}, _, _, _}} =
-        current_state
-
-      updated_client_info = Map.put(client_info, :caller, caller)
-
-      {:connected,
-       {:context, req, transport, empty_list, ws, {module, updated_client_info}, "", true, 0}}
-    end)
-
-    next_block_message = Xogmios.ChainSync.Messages.next_block()
-    :banana_websocket_client.cast(ws_pid, {:text, next_block_message})
-
-    receive do
-      {:ok, next_block} -> {:ok, next_block}
-    after
-      5_000 -> :error
+  defp lookup_process({:via, registry, {name, id}}) do
+    case registry.lookup(name, id) do
+      [{pid, nil}] -> {:ok, pid}
+      _ -> {:error, :process_not_found}
     end
   end
 
