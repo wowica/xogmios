@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- New `Xogmios.ChainSync.call/2` function to send synchronous messages to the ChainSync process. Example:
+- New `Xogmios.ChainSync.call/2` function to send synchronous messages to the ChainSync process and an accompanying `handle_info/2` callback. Example usage of both:
 
   ```elixir
   defmodule ChainSyncBlockCounter do
