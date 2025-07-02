@@ -6,7 +6,7 @@ defmodule Xogmios.HealthCheck do
 
   @http_client :httpc
 
-  @spec run(url :: String.t()) :: :ok | {:error, String.t()}
+  @spec run(url :: String.t()) :: :ok | {:error, String.t()} | {:incomplete, String.t()}
   def run(ogmios_url) do
     url = parse_url(ogmios_url)
 
