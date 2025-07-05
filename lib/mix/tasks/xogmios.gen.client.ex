@@ -103,7 +103,6 @@ defmodule Mix.Tasks.Xogmios.Gen.Client do
 
       def start(_type, _args) do
         children = [
-          ...,
           {<%= @app_module_name %>.<%= @client_module_name %>, url: System.fetch_env!("OGMIOS_URL")}
         ]
         ...
