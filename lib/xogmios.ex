@@ -65,7 +65,7 @@ defmodule Xogmios do
   an atom to `sync_from` only works when connecting with **mainnet**. For testnet, `sync_from`
   must receive a specific point in the chain as described below.
 
-  b) A point in the chain using a tuple of `slot` and `block_hash`. For example:
+  b) A point in the chain using a tuple of `{slot, block_hash}`. For example:
 
   ```elixir
   def start_link(opts) do

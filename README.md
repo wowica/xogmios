@@ -68,8 +68,6 @@ defmodule MyApp.ChainSyncClient do
   use Xogmios, :chain_sync
 
   def start_link(opts) do
-    initial_state = []
-    opts = Keyword.merge(opts, initial_state)
     Xogmios.start_chain_sync_link(__MODULE__, opts)
   end
 
@@ -89,6 +87,7 @@ def start(_type, _args) do
   ogmios_url = System.fetch_env!("OGMIOS_URL")
 
   children = [
+    # ...,
     {MyApp.ChainSyncClient, url: ogmios_url}
   ]
   #...
@@ -137,7 +136,8 @@ defmodule ChainSyncClient do
   def handle_rollback(point, state) do
     IO.puts("handle_rollback")
 
-    # Use this information to update your custom state accordingly
+    # Use this information to update
+    # your db accordingly
     IO.puts("Block id: #{point["id"]}")
     IO.puts("Slot: #{point["slot"]}")
 
@@ -145,6 +145,8 @@ defmodule ChainSyncClient do
   end
 end
 ```
+
+For other options available to start the chain sync link, see the docs for [Xogmios.start_chain_sync_link/2](https://hexdocs.pm/xogmios/Xogmios.html#start_chain_sync_link/2) function.
 
 ### State Query
 
