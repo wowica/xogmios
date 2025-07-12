@@ -121,7 +121,7 @@ defmodule Xogmios.ChainSync do
   This function is useful to send messages to the ChainSync process from outside
   of the ChainSync module. The message should be handled by a matching `c:handle_info/2` callback.
   """
-  @spec call(pid(), term()) :: {:ok, term()} | {:error, term()}
+  @spec call(pid() | atom(), term()) :: {:ok, term()} | {:error, term()}
   def call(pid, message) do
     case get_ws_pid(pid) do
       {:ok, ws_pid} ->
