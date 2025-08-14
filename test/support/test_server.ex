@@ -24,7 +24,7 @@ defmodule TestServer do
     {:ok, cowboy_server}
   end
 
-  def shutdown() do
+  def shutdown do
     Plug.Cowboy.shutdown(WebSocket.Router.HTTP)
   end
 end

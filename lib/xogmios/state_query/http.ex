@@ -38,13 +38,11 @@ defmodule Xogmios.StateQuery.HTTP do
   end
 
   defp build_query_message(query_name, query_params) do
-    try do
-      {scope, name} = parse_query_name(query_name)
-      message = Messages.build_message(scope, name, query_params)
-      {:ok, message}
-    rescue
-      error -> {:error, {:build_message_error, error}}
-    end
+    {scope, name} = parse_query_name(query_name)
+    message = Messages.build_message(scope, name, query_params)
+    {:ok, message}
+  rescue
+    error -> {:error, {:build_message_error, error}}
   end
 
   defp parse_query_name(query_name) do

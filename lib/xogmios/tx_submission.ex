@@ -58,14 +58,12 @@ defmodule Xogmios.TxSubmission do
     do: {:ok, Messages.evaluate_tx(cbor)}
 
   defp call(client, message) do
-    try do
-      case GenServer.call(client, {:send, message}, @request_timeout) do
-        {:ok, response} -> {:ok, response}
-        {:error, reason} -> {:error, reason}
-      end
-    catch
-      :exit, {:timeout, _} -> {:error, :timeout}
+    case GenServer.call(client, {:send, message}, @request_timeout) do
+      {:ok, response} -> {:ok, response}
+      {:error, reason} -> {:error, reason}
     end
+  catch
+    :exit, {:timeout, _} -> {:error, :timeout}
   end
 
   defmacro __using__(_opts) do

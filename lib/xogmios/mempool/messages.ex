@@ -5,7 +5,7 @@ defmodule Xogmios.Mempool.Messages do
 
   alias Jason.DecodeError
 
-  def acquire_mempool() do
+  def acquire_mempool do
     json = ~S"""
     {
       "jsonrpc": "2.0",

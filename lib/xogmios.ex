@@ -27,9 +27,9 @@ defmodule Xogmios do
   """
 
   alias Xogmios.ChainSync
+  alias Xogmios.MempoolTxs
   alias Xogmios.StateQuery
   alias Xogmios.TxSubmission
-  alias Xogmios.MempoolTxs
 
   @doc """
   Starts a new State Query process linked to the current process.

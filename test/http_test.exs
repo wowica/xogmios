@@ -14,7 +14,7 @@ defmodule Xogmios.HTTPTest do
       assert {:ok, result} = HTTP.send_query("http://localhost:1337", "protocolParameters")
 
       assert result["minFeeCoefficient"] == 44
-      assert result["maxBlockBodySize"]["bytes"] == 90112
+      assert result["maxBlockBodySize"]["bytes"] == 90_112
     end
 
     test "send_query/2 returns era start" do
@@ -75,7 +75,7 @@ defmodule Xogmios.HTTPTest do
     end
 
     test "handles JSON-RPC errors" do
-      assert {:error, %{"code" => -32602, "message" => "Invalid params"}} =
+      assert {:error, %{"code" => -32_602, "message" => "Invalid params"}} =
                HTTP.send_query("http://localhost:1337", "trigger_jsonrpc_error")
     end
 

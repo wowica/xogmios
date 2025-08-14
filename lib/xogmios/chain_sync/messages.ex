@@ -11,7 +11,7 @@ defmodule Xogmios.ChainSync.Messages do
   Once the response from this initial message is received, then
   the client proceeds with the appropriate syncing strategy.
   """
-  def initial_sync() do
+  def initial_sync do
     # The `id:"initial_sync"` is returned as part of the message response,
     # and helps the client determine that this is a "nextBlock" response
     # to the initial message.
@@ -31,7 +31,7 @@ defmodule Xogmios.ChainSync.Messages do
   Request first block which preceeds the initial rollback received
   as a response from Ogmios.
   """
-  def next_block_start() do
+  def next_block_start do
     json = ~S"""
     {
       "jsonrpc": "2.0",
@@ -47,7 +47,7 @@ defmodule Xogmios.ChainSync.Messages do
   @doc """
   Request next block.
   """
-  def next_block() do
+  def next_block do
     json = ~S"""
     {
       "jsonrpc": "2.0",
