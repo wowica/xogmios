@@ -5,8 +5,8 @@ defmodule Xogmios.ChainSync.Connection do
   """
   require Logger
 
-  alias Xogmios.HealthCheck
   alias Xogmios.ChainSync.Messages
+  alias Xogmios.HealthCheck
 
   defmacro __using__(_opts) do
     quote do
