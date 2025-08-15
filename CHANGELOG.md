@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- **HTTP support for State Query protocol**: New stateless HTTP API for one-off queries without maintaining persistent WebSocket connections.
+  - New `Xogmios.HTTP` module as unified entry point for all stateless HTTP APIs
+  - New `Xogmios.StateQuery.HTTP` module for direct HTTP state queries
+  - Support for both ledger-state and network queries via HTTP
+  - Automatic URL parsing and WebSocket-to-HTTP conversion (ws:// → http://, wss:// → https://)
+  - Comprehensive test suite with mocks and error handling
+  - HTTP client usage example (`examples/http_client.ex`) demonstrating stateless operations
+
 ## [v0.7.1](https://github.com/wowica/xogmios/releases/tag/v0.7.1) (2025-07-16)
 
 ### Fixed
