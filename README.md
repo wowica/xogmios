@@ -25,7 +25,38 @@ Mini-Protocols supported by this library:
 
 See [Examples](#examples) section below for information on how to use this library.
 
-## Installation
+## Quick Start
+
+```elixir
+Mix.install([{:xogmios, "> 0.0.0"}])
+
+defmodule ChainSyncClient do
+  use Xogmios, :chain_sync
+
+  def start_link(opts) do
+    Xogmios.start_chain_sync_link(__MODULE__, opts)
+  end
+
+  @impl true
+  def handle_block(block, state) do
+    IO.puts(block["height"])
+    {:ok, :next_block, state}
+  end
+end
+
+opts = [
+  # Populate OGMIOS_URL with your Ogmios Server WS URL
+  # or use https://demeter.run/
+  url: System.fetch_env!("OGMIOS_URL"),
+  sync_from: :origin
+]
+
+{:ok, _pid} = ChainSyncClient.start_link(opts)
+
+Process.sleep(:infinity)
+```
+
+## Using it on a mix project
 
 Add the dependency to `mix.exs`:
 
