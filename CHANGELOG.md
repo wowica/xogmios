@@ -17,6 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Comprehensive test suite with mocks and error handling
   - HTTP client usage example (`examples/http_client.ex`) demonstrating stateless operations
 
+- **HTTP support for Tx Submission protocol**: New stateless HTTP API for one-off transaction submissions without maintaining persistent WebSocket connections.
+  - New `Xogmios.TxSubmission.HTTP` module for direct HTTP transaction submissions
+  - Support for both transaction submission and execution unit evaluation via HTTP
+  - Automatic URL parsing and WebSocket-to-HTTP conversion (ws:// → http://, wss:// → https://)
+  - Comprehensive test suite with mocks and error handling
+  - HTTP client usage example (`examples/http_client.ex`) demonstrating stateless operations
+
+
 ## [v0.7.1](https://github.com/wowica/xogmios/releases/tag/v0.7.1) (2025-07-16)
 
 ### Fixed
