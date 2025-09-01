@@ -137,7 +137,7 @@ See section below for examples of client modules.
 
 ## Examples
 
-### Chain Sync
+### Chain Synchronization
 
 The following is an example of a module that implement the **Chain Sync** behaviour. In this example, the client syncs with the tip of the chain, reads the next 3 blocks and then closes the connection with the server.
 
@@ -184,36 +184,11 @@ For other options available to start the chain sync link, see the docs for [Xogm
 The following illustrates working with the **State Query** protocol. It runs queries against the tip of the chain.
 
 ```elixir
-defmodule StateQueryClient do
-  use Xogmios, :state_query
-  alias Xogmios.StateQuery
-
-  def start_link(opts) do
-    Xogmios.start_state_link(__MODULE__, opts)
-  end
-
-  def get_current_epoch(pid \\ __MODULE__) do
-    # Defaults to Ledger-state queries.
-    # The following call is the same as calling
-    # `StateQuery.send_query(pid, "queryLedgerState/epoch")`
-    StateQuery.send_query(pid, "epoch")
-  end
-
-  def get_network_height(pid \\ __MODULE__) do
-    # For network queries, scope must be explicitly used.
-    StateQuery.send_query(pid, "queryNetwork/blockHeight")`
-  end
-
-  def send_query_no_params(pid \\ __MODULE__, query_name) do
-    StateQuery.send_query(pid, query_name)
-  end
-
-  def send_query(pid \\ __MODULE__, query_name, query_params) do
-    # Optional query params are sent as the third argument
-    # to StateQuery.send_query/3
-    StateQuery.send_query(pid, query_name, query_params)
-  end
-end
+Xogmios.HTTP.send_query(ogmios_url, "protocolParameters")
+Xogmios.HTTP.send_query(ogmios_url, "queryNetwork/blockHeight")
+# Despite being supported, querying for utxos using Ogmios is not recommended 
+# as it's not performant. Advised to use an indexer for this.
+Xogmios.HTTP.send_query(url, "utxo", %{addresses: ["addr1..."]}),
 ```
 
 ### Tx Submission
@@ -221,20 +196,8 @@ end
 The following illustrates working with the **Transaction Submission** protocol. It submits a signed transaction, represented as a CBOR, to the Ogmios server.
 
 ```elixir
-defmodule TxSubmissionClient do
-  use Xogmios, :tx_submission
-  alias Xogmios.TxSubmission
-
-  def start_link(opts) do
-    Xogmios.start_tx_submission_link(__MODULE__, opts)
-  end
-
-  def submit_tx(pid \\ __MODULE__, cbor) do
-    # The CBOR must be a valid transaction,
-    # properly built and signed
-    TxSubmission.submit_tx(pid, cbor)
-  end
-end
+Xogmios.HTTP.submit_tx(ogmios_url, cbor)
+Xogmios.HTTP.evaluate_tx(ogmios_url, cbor)
 ```
 
 ### Mempool Monitoring
