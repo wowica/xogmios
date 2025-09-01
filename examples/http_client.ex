@@ -44,10 +44,24 @@ defmodule HTTPClient do
   end
 
   @doc """
-  Demo function showing all HTTP state query operations
+  Submit a transaction via HTTP (stateless)
+  """
+  def submit_transaction(cbor, base_url \\ "http://localhost:1337") do
+    HTTP.submit_tx(base_url, cbor)
+  end
+
+  @doc """
+  Evaluate transaction execution units via HTTP
+  """
+  def evaluate_transaction(cbor, base_url \\ "http://localhost:1337") do
+    HTTP.evaluate_tx(base_url, cbor)
+  end
+
+  @doc """
+  Demo function showing all HTTP operations
   """
   def demo(base_url \\ "http://localhost:1337") do
-    IO.puts("Testing Xogmios HTTP State Queries at #{base_url}")
+    IO.puts("Testing Xogmios HTTP API at #{base_url}")
     IO.puts("")
 
     IO.puts("State Queries:")
@@ -81,6 +95,27 @@ defmodule HTTPClient do
 
       {:error, error} ->
         IO.puts("Protocol parameters error: #{inspect(error)}")
+    end
+
+    IO.puts("")
+    IO.puts("Transaction Operations:")
+
+    sample_cbor = "sample_cbor_data_for_demo"
+
+    case submit_transaction(sample_cbor, base_url) do
+      {:ok, %{"transaction" => %{"id" => tx_id}}} ->
+        IO.puts("Transaction submitted: #{tx_id}")
+
+      {:ok, result} ->
+        IO.puts("Transaction result: #{inspect(result)}")
+
+      {:error, error} ->
+        IO.puts("Submit error: #{inspect(error)}")
+    end
+
+    case evaluate_transaction(sample_cbor, base_url) do
+      {:ok, evaluation} -> IO.puts("Evaluation: #{inspect(evaluation)}")
+      {:error, error} -> IO.puts("Evaluation error: #{inspect(error)}")
     end
 
     IO.puts("")
